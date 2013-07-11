@@ -16,4 +16,4 @@ Check out the test suite for more.
 
 ### Tests
 
-Run structured.js tests with `npm test`
+Run structured.js tests with `npm test` or by opening browser-test/index.html.
