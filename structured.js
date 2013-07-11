@@ -54,13 +54,20 @@ if (typeof module !== "undefined" && module.exports) {
      *        relative ordering matter).
      */
     function parseStructure(structure) {
-        var fullTree = esprima.parse(structure.toString());
-        if (!fullTree.type === "Program" || !fullTree.body.length === 1 ||
-            !fullTree.body[0].type === "FunctionDeclaration" ||
-            !fullTree.body[0].body) {
+        // Prepend with an assignment so that function() {} becomes
+        //  valid standalone Javascript.
+        var fullTree = esprima.parse("structure = " + structure.toString());
+        try {
+            if (fullTree.body[0].expression.right.type !== "FunctionExpression" ||
+                !fullTree.body[0].expression.right.body) {
+                throw "Poorly formatted structure code";
+            }
+        } catch (e) {
+            // Also catches cases where the accesses in the if-statement
+            //  fail since fullTree is poorly formed.
             throw "Poorly formatted structure code.";
         }
-        var tree = fullTree.body[0].body;
+        var tree = fullTree.body[0].expression.right.body;
         simplifyTree(tree);
         return tree;
     }

@@ -12,119 +12,127 @@ var basicTests = function() {
 
     test("Positive tests of syntax", function() {
 
+        ok(Structured.match("",
+            function() {}),
+            "Empty structure matches empty string.");
+
         ok(Structured.match("if (y > 30 && x > 13) {x += y;}",
-            function structure() { if (_) {} }),
+            function() { if (_) {} }),
             "Basic if-statement structure matches.");
 
+        ok(Structured.match("if (y > 30 && x > 13) {x += y;}",
+            function foo() { if (_) {} }),
+            "Using a named function is allowable as well.");
+
         ok(Structured.match("if (y > 30 && x > 13) {x += y;} else { y += 2;}",
-            function structure() { if (_) {} else {}}),
+            function() { if (_) {} else {}}),
             "Basic if-else statement structure matches.");
 
         ok(Structured.match("if (y > 30 && x > 13) {x += y;} \
             else if(x <10) {y -= 20;} else { y += 2;}",
-            function structure() { if (_) {} else if (_) {} else {}}),
+            function() { if (_) {} else if (_) {} else {}}),
             "Basic if, else-if, else statement structure matches.");
 
         ok(Structured.match("for (var a = 0; a < 10; a += 1) { a -= 2;}",
-            function structure() { for (_; _; _) {} }),
+            function() { for (_; _; _) {} }),
             "Basic for-statement structure matches.");
 
         ok(Structured.match("var a = 30;",
-            function structure() { var _ = _; }),
+            function() { var _ = _; }),
             "Basic variable declaration + initialization matches.");
 
         ok(Structured.match("var test = function() {return 3+2;}",
-            function structure() { var _ = function() {};}),
+            function() { var _ = function() {};}),
             "Basic function assignment into var matches.");
 
         ok(Structured.match("function foo() {return x+2;}",
-            function structure() { function _() {};}),
+            function() { function _() {};}),
             "Basic standalone function declaration matches.");
 
         ok(Structured.match("rect();",
-            function structure() { rect(); }),
+            function() { rect(); }),
             "No-parameter call to function matches.");
 
         ok(Structured.match("rect(3);",
-            function structure() { rect(); }),
+            function() { rect(); }),
             "Parameterized call to no-param function structure matches.");
 
         ok(Structured.match("rect(30, 40, 10, 11);",
-            function structure() { rect(30, 40, 10, 11); }),
+            function() { rect(30, 40, 10, 11); }),
             "Fully specified parameter call to function matches.");
 
         ok(Structured.match("rect(30, 40, 10, 11);",
-            function structure() { rect(30, _, _, 11); }),
+            function() { rect(30, _, _, 11); }),
             "Parameters with wildcards call to function matches.");
 
         ok(Structured.match("rect(30, 40);",
-            function structure() { rect(_, _); }),
+            function() { rect(_, _); }),
             "Parameters with all wildcards call to function matches.");
 
         ok(Structured.match("rect(30, 40, 30);",
-            function structure() { rect(_, _); }),
+            function() { rect(_, _); }),
             "Extra params to function matches.");
     });
 
     test("Negative tests of syntax", function() {
 
         equal(Structured.match("if (y > 30 && x > 13) {x += y;}",
-            function structure() { if (_) {_} else {}}),
+            function() { if (_) {_} else {}}),
             false,
             "If-else does not match only an if.");
 
         equal(Structured.match("if (y > 30 && x > 13) {x += y;} else {y += 2;}",
-            function structure() { if (_) {} else if (_) {} else {}}),
+            function() { if (_) {} else if (_) {} else {}}),
             false,
             "If, else if, else structure does not match only if else.");
 
         equal(Structured.match("var a;",
-            function structure() { var _ = _; }),
+            function() { var _ = _; }),
             false,
             "Variable declaration + init does not match just declaration.");
 
         equal(Structured.match("while(true) { a -= 2;}",
-            function structure() { for (_; _; _) {} }),
+            function() { for (_; _; _) {} }),
             false,
             "For-statement does not match a while loop.");
 
         equal(Structured.match("var test = 3+5",
-            function structure() { var _ = function() {};}),
+            function() { var _ = function() {};}),
             false,
             "Basic function declaration does not match basic var declaration");
 
         equal(Structured.match("var test = function foo() {return 3+2;}",
-            function structure() { function _() {};}),
+            function() { function _() {};}),
             false,
             "Function declaration does not match function assignment into var");
 
         equal(Structured.match("rect();",
-            function structure() { ellipse(); }),
+            function() { ellipse(); }),
             false,
             "Call to function does not match differently-named function.");
 
         equal(Structured.match("rect(300, 400, 100, 110);",
-            function structure() { rect(30, 40, 10, 11); }),
+            function() { rect(30, 40, 10, 11); }),
             false,
             "Fully specified parameter call to function identifies mismatch.");
 
         equal(Structured.match("rect(30);",
-            function structure() { rect(30, 40); }),
+            function() { rect(30, 40); }),
             false,
             "Too few parameters does not match.");
 
         equal(Structured.match("rect(60, 40, 10, 11);",
-            function structure() { rect(30, _, _, 11); }),
+            function() { rect(30, _, _, 11); }),
             false,
             "Parameters with wildcards call to function identifies mismatch.");
 
         equal(Structured.match("rect();",
-            function structure() { rect(_, _); }),
+            function() { rect(_, _); }),
             false,
             "Wildcard params do not match no-params for function call.");
 
         equal(Structured.match("rect(30, 40);",
-            function structure() { rect(_, _, _); }),
+            function() { rect(_, _, _); }),
             false,
             "Parameters with too few wildcards call to function mismatches.");
     });
@@ -137,10 +145,10 @@ var clutterTests = function() {
 
         ok(Structured.match("if (y > 30 && x > 13) {x += y;} \
             else if(x <10) {y -= 20;} else { y += 2;}",
-            function structure() { if (_) {} else {}}),
+            function() { if (_) {} else {}}),
             "Extra else-if statement correctly allowed though not specified.");
 
-        structure = function structure() {
+        structure = function() {
             for (; _ < 10; _ += 1) {
                 if (_) {
 
@@ -173,7 +181,7 @@ var nestedTests = function() {
     test("More involved tests of nested syntax", function() {
         var structure, code;
 
-        structure = function structure() {
+        structure = function() {
             if (_) {
                 if (_) {
 
@@ -215,7 +223,7 @@ var drawingTests = function() {
     test("Draw loop specific tests", function() {
         var structure, code;
 
-        structure = function structure() {
+        structure = function() {
             var draw = function() {
                 rect(_, _, _, _);
             };
@@ -227,7 +235,7 @@ var drawingTests = function() {
         ok(Structured.match(code, structure),
             "Draw with wildcard rect call matches.");
 
-        structure = function structure() {
+        structure = function() {
             var draw = function() {
                 rect();
             };
@@ -240,7 +248,7 @@ var drawingTests = function() {
         ok(Structured.match(code, structure),
             "Draw with wildcard rect call and distractions matches.");
 
-        structure = function structure() {
+        structure = function() {
             var draw = function() {
                 var _ = 10;
                 if (_) {
@@ -288,22 +296,22 @@ var peerTests = function() {
         var structure, code;
 
         ok(Structured.match("rect(); ellipse();",
-            function structure() { rect(); ellipse()}),
+            function() { rect(); ellipse()}),
             "Back-to-back function calls match.");
 
         equal(Structured.match("rect();",
-            function structure() { rect(); ellipse()}),
+            function() { rect(); ellipse()}),
             false,
             "Back-to-back function calls do not match only the first.");
 
-        structure = function structure() {
+        structure = function() {
             var _ = 0;
             var _ = 1;
         };
         code = "var a = 0; var b = 1;";
         ok(Structured.match(code, structure), "Back-to-back vars matched.");
 
-        structure = function structure() {
+        structure = function() {
             var draw = function() {
                 rect();
                 ellipse();
@@ -329,7 +337,7 @@ var combinedTests = function() {
     QUnit.module("Combined functionality tests");
     test("Simple combined tests", function() {
         var structure, code;
-        structure = function structure() {
+        structure = function() {
           if (_ % 2) {
             _ += _;
           }

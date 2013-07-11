@@ -20,8 +20,8 @@ $(document).ready(function() {
 
     // Run Structured.match when the user presses the button.
     $("#run-button").click(function(evt) {
-        var structure = editorStructure.getValue()
-        var code = editorTest.getValue();
+        var structure = "function() {\n" + editorStructure.getValue() + "\n}";
+        var code =  editorTest.getValue();
         var message;
         try {
             var result = Structured.match(code, structure);
