@@ -8,7 +8,7 @@
         _ += 1;
       }
     };
-    var code = "var a = 11; if (a % 2 == 1) { b += 1;}"
+    var code = "var a = 11; var b = 1; if (a % 2 == 1) { b += 1;}"
     var result = Structured.match(structure, code); // true
 
 Check out the test suite for more.
@@ -21,3 +21,8 @@ Check out the test suite for more.
 ### Tests
 
 Run structured.js tests with `npm test` or by opening browser-test/index.html.
+
+### Dependencies
+
+[Esprima](http://esprima.org) and [UnderscoreJS](http://underscorejs.org) for the framework,
+[QUnit](http://qunitjs.com/) for the test suite.

@@ -14,6 +14,9 @@ if (typeof module !== "undefined" && module.exports) {
     var _ = require("underscore");
 } else {
     exports = this.Structured = {};
+    if (!this.esprima || !this._) {
+        throw "Error: Both Esprima and UnderscoreJS are required dependencies.";
+    }
 }
 
 (function(exports) {
