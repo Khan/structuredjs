@@ -1,0 +1,91 @@
+body {
+    padding: 40px;
+    padding-top: 60px;
+    background-color: #666;
+    font-family: helvetica;
+}
+#test-code {
+    display: absolute;
+    top: 20px;
+    right: 0px;
+    bottom: 0px;
+    height: 300px;
+    width: 450px;
+    left: 20px;
+}
+#structure {
+    position: absolute;
+    top: 90px;
+    left: 530px;
+    bottom: 0px;
+    height: 300px;
+    width: 450px;
+}
+#results {
+    display: inline-block;
+    text-transform: lowercase;
+    color: lightblue;
+    font-weight: 200px;
+    letter-spacing: 1px;
+    margin-top: 1em;
+    padding: 20px;
+    font-size: 1.4em
+}
+#run-button {
+    font-size: 20px;
+    height: 50px;
+    margin-left: 280px;
+    background-color: lightblue;
+    width: 200px;
+    color: #333;
+}
+#remaining {
+    position: absolute;
+    top: 380px;
+}
+.test-wrapper {
+    margin-left: 200px;
+    margin-bottom: 50px;
+}
+.test-code {
+    background-color: #CECECE;
+    padding: 10px;
+    font-family: monospace;
+    width: 500px;
+}
+.code-label {
+    position: absolute;
+    top: -320px;
+    left: 30px;
+    color: rgb(240, 240, 240);
+    font-family: helvetica;
+    font-weight: 600;
+    text-transform: lowercase;
+    font-variant: small-caps;
+}
+.structure-label {
+    position: absolute;
+    left: 780px;
+    top: -320px;
+    width: 9em;
+    font-family: helvetica;
+    font-weight: 600;
+    text-transform: lowercase;
+    font-variant: small-caps;
+    color: rgb(240, 240, 240);
+}
+.page-label {
+    position: absolute;
+    left: 380px;
+    top: -355px;
+    width: 10em;
+    font-family: helvetica;
+    font-weight: 600;
+    letter-spacing: .2em;
+    text-transform: lowercase;
+    font-variant: small-caps;
+    color: rgb(223, 252, 255);
+    font-size: 2em;
+    padding: 5px 50px;
+    color: lightblue;
+}

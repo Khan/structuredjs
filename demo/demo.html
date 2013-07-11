@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>StructuredJS Demo</title>
+    <link rel="stylesheet" href="demo.css">
+    <script src="../external/jquery.min.js"></script>
+    <script src="../external/underscore.min.js"></script>
+    <script src="../external/esprima.js"></script>
+    <script src="../external/ace-orig.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../external/ace-mode-javascript.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../external/ace-worker-javascript.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../structured.js"></script>
+    <script src="demo.js"></script>
+</head>
+<body>
+    <div id="structure">function structure() {
+  if (_) {
+    _ += _;
+    for (_; _; _) {
+        rect(_, _, 30, 30);
+        foo();
+    }
+  }
+}</div>
+<div id="test-code">if (y > 30 && x > 13) {
+   x += y;
+   for (var i = 0; i < x; i += 1) {
+     rect(i, 3, 30, 30);
+     bar(); /* extra calls are allowed */
+     foo(); /* (missing ones are not) */
+   }
+}</div>
+<div id="remaining">
+    <span class="code-label">Code to check</span>
+    <button id="run-button">Test structure</button>
+    <div id="results">
+        Code results outputted here.
+    </div>
+    <span class="page-label">Demo</span>
+    <span class="structure-label">Required structure</span>
+
+    <div class="test-wrapper">
+        <pre class="test-code">
+            QUnit test code generated here.
+        </pre>
+    </div>
+</div>
+</body>
+</html>

@@ -13,6 +13,10 @@
 
 Check out the test suite for more.
 
+### Demo
+
+`demo/demo.html` provides a user interface to create and test wildcard structures. The demo page is a good way to get a feel for the analysis and generate QUnit tests.
+
 
 ### Tests
 
