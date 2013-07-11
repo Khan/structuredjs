@@ -15,7 +15,7 @@ $(document).ready(function() {
     // Run Structured.match when the user presses the button.
     $("#run-button").click(function(evt) {
         var structure = "function() {\n" + editorStructure.getValue() + "\n}";
-        var code =  editorTest.getValue();
+        var code = editorTest.getValue();
         var message;
         try {
             var result = Structured.match(code, structure);
@@ -61,7 +61,7 @@ function makeTest(structure, code, result) {
         testCode += line + "   \\n \\ \n";
     });
     testCode += "\"; \n";
-    testCode += "equal(Detect.matchStructure(code, structure),\n\t" +
+    testCode += "equal(Structured.match(code, structure),\n\t" +
         result + ", \"message\");";
     $(".test-code").hide().html(testCode).fadeIn();
 }

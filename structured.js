@@ -20,7 +20,6 @@ if (typeof module !== "undefined" && module.exports) {
 }
 
 (function(exports) {
-
     /*
      * Returns true if the code (a string) matches the structure in rawStructure
      * Throws an exception if code is not parseable.
@@ -31,7 +30,11 @@ if (typeof module !== "undefined" && module.exports) {
      *     match(code, rawStructure);
      */
     function match(code, rawStructure) {
-        var structure = parseStructure(rawStructure);
+        var wildcardVars = {order: [], skipData: {}, values: {}};
+        // Note: After the parse, structure contains object references into
+        // wildcardVars[values] that must be maintained. So, beware of
+        // JSON.parse(JSON.stringify), etc. as the tree is no longer static.
+        var structure = parseStructure(rawStructure, wildcardVars);
         var codeTree = esprima.parse(code);
         var toFind = structure.body;
         var peers = [];
@@ -39,8 +42,83 @@ if (typeof module !== "undefined" && module.exports) {
             toFind = structure.body[0];
             peers = structure.body.slice(1);
         }
-        var result = checkMatchTree(codeTree, toFind, peers);
+        var result;
+        if (wildcardVars.order.length == 0) {
+            // With no vars to match, our normal greedy approach works great.
+            result = checkMatchTree(codeTree, toFind, peers, wildcardVars);
+        } else {
+            // If there are variables to match, we must do a potentially
+            // exhaustive search across the possible ways to match the vars.
+            result = anyPossible(0, wildcardVars);
+        }
         return result;
+
+        /*
+         * Checks whether any possible valid variable assignment for this i
+         *  results in a valid match.
+         *
+         * We orchestrate this check by building skipData, which specifies
+         *  for each variable how many possible matches it should skip before
+         *  it guesses a match. The iteration over the tree is the same
+         *  every time -- if the first guess fails, the next run will skip the
+         *  first guess and instead take the second appearance, and so on.
+         *
+         * When there are multiple variables, changing an earlier (smaller i)
+         *  variable guess means that we must redo the guessing for the later
+         *  variables (larger i).
+         *
+         * Returning false involves exhausting all possibilities. In the worst
+         *  case, this will mean exponentially many possibilities -- variables
+         *  are expensive for all but small tests.
+         *
+         * wildcardVars = wVars:
+         *     .values[varName] contains the guessed node value of each
+         *     variable, or the empty object if none.
+         *     .skipData[varName] contains the number of potential matches of
+         *          this var to skip before choosing a guess to assign to values
+         *     .leftToSkip[varName] stores the number of skips left to do
+         *         (used during the match algorithm)
+         *     .order[i] is the name of the ith occurring variable.
+         */
+        function anyPossible(i, wVars) {
+            var order = wVars.order;  // Just for ease-of-notation.
+            wVars.skipData[order[i]] = 0;
+            do {
+                // Reset the skip # for all later variables.
+                for (var rest = i + 1; rest < order.length; rest += 1) {
+                    wVars.skipData[order[rest]] = 0;
+                }
+                // Check for a match only if we have reached the last var in
+                // order (and so set skipData for all vars). Otherwise,
+                // recurse to check all possible values of the next var.
+                if (i === order.length - 1) {
+                    // Reset the wildcard vars' guesses. Delete the properties
+                    // rather than setting to {} in order to maintain shared
+                    // object references in the structure tree (toFind, peers)
+                    _.each(wVars.values, function(value, key) {
+                        _.each(wVars.values[key], function(v, k) {
+                            delete wVars.values[key][k];
+                        });
+                    });
+                    wVars.leftToSkip = _.extend({}, wVars.skipData);
+                    // Use a copy of peers because peers is destructively
+                    // modified in checkMatchTree (via checkNodeArray).
+                    if (checkMatchTree(codeTree, toFind, peers.slice(), wVars)) {
+                        return true;
+                    }
+                } else if (anyPossible(i + 1, wVars)) {
+                    return true;
+                }
+                // This guess didn't work out -- skip it and try the next.
+                wVars.skipData[order[i]] += 1;
+                // The termination condition is when we have run out of values
+                // to skip and values is no longer defined for this var after
+                // the match algorithm. That means that there is no valid
+                // assignment for this and later vars given the assignments to
+                // previous vars (set by skipData).
+            } while (!_.isEmpty(wVars.values[order[i]]));
+            return false;
+        }
     }
 
     /*
@@ -53,7 +131,7 @@ if (typeof module !== "undefined" && module.exports) {
      *    and code can go before or after any statement (only the nesting and
      *        relative ordering matter).
      */
-    function parseStructure(structure) {
+    function parseStructure(structure, wVars) {
         // Prepend with an assignment so that function() {} becomes
         //  valid standalone Javascript.
         var fullTree = esprima.parse("structure = " + structure.toString());
@@ -68,7 +146,7 @@ if (typeof module !== "undefined" && module.exports) {
             throw "Poorly formatted structure code.";
         }
         var tree = fullTree.body[0].expression.right.body;
-        simplifyTree(tree);
+        simplifyTree(tree, wVars);
         return tree;
     }
 
@@ -76,40 +154,66 @@ if (typeof module !== "undefined" && module.exports) {
      * Recursively traverses the tree and sets _ properties to undefined
      * and empty bodies to null.
      *
-     *   Wildcards are explicitly set to undefined -- these undefined properties
+     *  Wildcards are explicitly set to undefined -- these undefined properties
      *  must exist and be non-null in order for code to match the structure.
+     *
+     *  Wildcard variables are set up such that the first occurrence of the
+     *   variable in the structure tree is set to {"wildcardVar": varName},
+     *   and all later occurrences just refer to wVars.values[varName],
+     *   which is an object assigned during the matching algorithm to have
+     *   properties identical to our guess for the node matching the variable.
+     *   (maintaining the reference). In effect, these later accesses
+     *   to tree[key] mimic tree[key] simply being set to the variable value.
      *
      *  Empty statements are deleted from the tree -- they need not be matched.
      *
-     *   If the subtree is an array, we just iterate over the array using
+     *  If the subtree is an array, we just iterate over the array using
      *    for (var key in tree)
+     *
      */
-    function simplifyTree(tree) {
+    function simplifyTree(tree, wVars) {
         for (var key in tree) {
             if (!tree.hasOwnProperty(key)) {
-                continue;  // inherited property
+                continue;  // Inherited property
             }
             if (_.isObject(tree[key])) {
                 if (isWildcard(tree[key])) {
                     tree[key] = undefined;
+                } else if (isWildcardVar(tree[key])) {
+                    var varName = tree[key].name;
+                    if (!wVars.values[varName]) {
+                        // Perform setup for the first occurrence.
+                        wVars.values[varName] = {};  // Filled in later.
+                        tree[key] = {"wildcardVar": varName};
+                        wVars.order.push(varName);
+                        wVars.skipData[varName] = 0;
+                    } else {
+                        tree[key] = wVars.values[varName]; // Reference.
+                    }
                 } else if (tree[key].type === esprima.Syntax.EmptyStatement) {
                     // Arrays are objects, but delete tree[key] does not
                     //  update the array length property -- so, use splice.
                     _.isArray(tree) ? tree.splice(key, 1) : delete tree[key];
                 } else {
-                    simplifyTree(tree[key]);
+                    simplifyTree(tree[key], wVars);
                 }
             }
         }
     }
 
     /*
-     * Returns whether or not the node is intended as a wildcard node, which
+     * Returns whether the structure node is intended as a wildcard node, which
      * can be filled in by anything in others' code.
      */
     function isWildcard(node) {
         return (node.name && node.name === "_") ||
                 (_.isArray(node.body) && node.body.length === 0);
+    }
+
+    /* Returns whether the structure node is intended as a wildcard variable. */
+    function isWildcardVar(node) {
+        return (node.name && _.isString(node.name) && node.name.length >= 2 &&
+            node.name[0] === "$");
     }
 
     /*
@@ -120,23 +224,24 @@ if (typeof module !== "undefined" && module.exports) {
      * peersToFind: The remaining ordered syntax nodes that we must find after
      *     toFind (and on the same level as toFind).
      */
-    function checkMatchTree(currTree, toFind, peersToFind) {
+    function checkMatchTree(currTree, toFind, peersToFind, wVars) {
         if (_.isArray(toFind)) {
             console.error("toFind should never be an array.");
             console.error(toFind);
         }
-        if (exactMatchNode(currTree, toFind)) {
+        if (exactMatchNode(currTree, toFind, peersToFind, wVars)) {
             return true;
         }
+        // Check children.
         for (var key in currTree) {
             if (!currTree.hasOwnProperty(key) || !_.isObject(currTree[key])) {
                 continue;  // Skip inherited properties
             }
             // Recursively check for matches
             if ((_.isArray(currTree[key]) &&
-                    checkNodeArray(currTree[key], toFind, peersToFind)) ||
+                   checkNodeArray(currTree[key], toFind, peersToFind, wVars)) ||
                 (!_.isArray(currTree[key]) &&
-                    checkMatchTree(currTree[key], toFind, peersToFind))) {
+                checkMatchTree(currTree[key], toFind, peersToFind, wVars))) {
                 return true;
             }
         }
@@ -147,15 +252,15 @@ if (typeof module !== "undefined" && module.exports) {
      * Returns true if this level of nodeArr matches the node in
      * toFind, and also matches all the nodes in peersToFind in order.
      */
-    function checkNodeArray(nodeArr, toFind, peersToFind) {
+    function checkNodeArray(nodeArr, toFind, peersToFind, wVars) {
         for (var i = 0; i < nodeArr.length; i += 1) {
-            if (checkMatchTree(nodeArr[i], toFind, peersToFind)) {
+            if (checkMatchTree(nodeArr[i], toFind, peersToFind, wVars)) {
                 if (!peersToFind || peersToFind.length === 0) {
                     return true; // Found everything needed on this level.
                 } else {
                     // We matched this node, but we still have more nodes on
                     // this level we need to match on subsequent iterations
-                    toFind = peersToFind.shift();
+                    toFind = peersToFind.shift();  // Destructive.
                 }
             }
         }
@@ -175,7 +280,7 @@ if (typeof module !== "undefined" && module.exports) {
      *         returns true (the objects recursively match to the extent we
      *         care about, though they may not match exactly).
      */
-    function exactMatchNode(currNode, toFind) {
+    function exactMatchNode(currNode, toFind, peersToFind, wVars) {
         for (var key in toFind) {
             // Ignore inherited properties; also, null properties can be
             // anything and do not have to exist.
@@ -194,6 +299,18 @@ if (typeof module !== "undefined" && module.exports) {
             }
             // currNode does not have the key, but toFind does
             if (subCurr === undefined || subCurr === null) {
+                if (key === "wildcardVar") {
+                    if (wVars.leftToSkip[subFind] > 0) {
+                        wVars.leftToSkip[subFind] -= 1;
+                        return false;  // Skip, this does not match our wildcard
+                    }
+                    // We have skipped the required number, so take this guess.
+                    // Copy over all of currNode's properties into
+                    //  wVars.values[subFind] so the var references set up in
+                    //  simplifyTree behave like currNode. Shallow copy.
+                    _.extend(wVars.values[subFind], currNode);
+                    return true;  // This node is now our variable.
+                }
                 return false;
             }
             // Now handle arrays/objects/values
@@ -209,13 +326,13 @@ if (typeof module !== "undefined" && module.exports) {
                     continue; // Empty arrays can match any array.
                 }
                 var newToFind = subFind[0];
-                var peers = subFind.length > 1 ? subFind.slice(1) : [];
-                if (!checkNodeArray(subCurr, newToFind, peers)) {
+                var peers = subFind.slice(1);
+                if (!checkNodeArray(subCurr, newToFind, peers, wVars)) {
                     return false;
                 }
             } else if (_.isObject(subCurr)) {
                 // Both are objects, so do a recursive compare.
-                if (!checkMatchTree(subCurr, subFind)) {
+                if (!checkMatchTree(subCurr, subFind, peersToFind, wVars)) {
                     return false;
                 }
             } else if (!_.isObject(subCurr)) {

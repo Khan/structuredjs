@@ -307,9 +307,12 @@ var peerTests = function() {
         structure = function() {
             var _ = 0;
             var _ = 1;
+            var _ = _;
         };
-        code = "var a = 0; var b = 1;";
+        code = "var a = 0; var b = 1; var c = 30;";
         ok(Structured.match(code, structure), "Back-to-back vars matched.");
+        equal(Structured.match("var a = 0; var b = 1;",
+            structure), false, "Partial match does not suffice.");
 
         structure = function() {
             var draw = function() {
@@ -352,12 +355,116 @@ var combinedTests = function() {
     });
 };
 
+var wildcardVarTests = function() {
+    QUnit.module("Wildcard variables");
+    test("Simple wildcard tests", function() {
+        var structure, code;
+
+        ok(Structured.match("var x = 10; x -= 1;",
+            function() { var $a = 10; $a -= 1; }),
+            "Basic variable match works.");
+
+        equal(Structured.match("var x = 10; y -= 1;",
+            function() { var $a = 10; $a -= 1; }),
+            false, "Basic variable no-match works.");
+
+        ok(Structured.match("var x = 10; var y = 10; var t = 3; var c = 1; c = 3; t += 2; y += 2;",
+            function() {var $a = 10; var $b = _; $b += 2; $a += 2;}),
+            "Basic multiple-option variable match works.");
+
+        equal(Structured.match("var x = 10; var y = 10; var t = 3; var c = 1; c = 3; y += 2;",
+            function() {var $a = _; var $b = _; $b = 3 + 2; $a += 2;}), false,
+            "Basic multiple-option variable no-match works.");
+
+        equal(Structured.match("if(true) {var x = 2;} var y = 4; z = x + y",
+            function() {if (_) {var $a = _;} var $b = 4; _ = $a + $b;}),
+            true, "Simple multiple var match works");
+
+        // QUnit test code
+        structure = function() {
+        function $k(bar) {}
+            $k;
+        };
+        code = "function foo(bar) {} bar; foo;";
+        equal(Structured.match(code, structure),
+            true, "Matching declared function name works.");
+    });
+    test("Involved wildcard tests", function() {
+        var structure, code;
+        structure = function() {
+            var $a, $b, $c, $d;
+            $a = 1;
+            $b = 1;
+            $c = 1;
+            $d = 1;
+            $a += 3;
+        };
+        code = " \n \
+        var r, s, t, u, v, w, x, y, z;   \n \
+        r = 1; s = 1; t = 1; u = 1; v = 1; w = 1; x = 1; y = 1; z = 1;   \n \
+        u += 3;   \n \
+        ";
+        equal(Structured.match(code, structure),
+            true, "More ambiguous multi-variable matching works.");
+        code = " \n \
+        var r, s, t, u, v, w, x, y, z;   \n \
+        r = 1; s = 1; t = 1; u = 1; v = 1; w = 1; x = 1; y = 1; z = 1;   \n \
+        x += 3;   \n \
+        ";
+        equal(Structured.match(code, structure),
+            false, "More ambiguous multi-variable non-matching works.");
+
+        structure = function() {
+            var $a = _;
+            var $d = function() {}
+            var draw = function() {
+                var $b = $a + _;
+                $d(_, $e, $b, _);
+                $d($a);
+                $a = $e.length;
+            }
+        };
+        code = " \n \
+        var a = 10, b = 20, z = 3, y = 1;   \n \
+        var bar = function(x) {return x + 3;};   \n \
+        var foo = function(x) {return x + 3;};   \n \
+        var draw = function() {   \n \
+            var t = z + y;   \n \
+            foo(t);   \n \
+            foo(3, 'eagle', t, 10);   \n \
+            test(z);   \n \
+            foo(z);   \n \
+            z = 'eagle'.length;   \n \
+        }   \n \
+        ";
+        equal(Structured.match(code, structure),
+            true, "Complex vars with parameters, function names, etc works.");
+        code = " \n \
+        var a = 10, b = 20, z = 3, y = 1;   \n \
+        var bar = function(x) {return x + 3;};   \n \
+        var foo = function(x) {return x + 3;};   \n \
+        var draw = function() {   \n \
+            var t = z + y;   \n \
+            foo(t);   \n \
+            foo(3, 'eagle', t, 10);   \n \
+            test(z);   \n \
+            foo(z);   \n \
+            z = 'eaglee'.length;   \n \
+        }   \n \
+        ";
+        equal(Structured.match(code, structure),
+            false, "Complex vars with small mismatch breaks.");
+
+    });
+};
+
 var runAll = function() {
     basicTests();
     clutterTests();
     nestedTests();
     drawingTests();
     peerTests();
+    wildcardVarTests();
     combinedTests();
 };
 
