@@ -15,8 +15,12 @@ $(document).ready(function() {
 
     // Save the user's focus so we can restore it after the button is pressed.
     var oldFocus = editorTest;
-    editorTest.on("focus", function(){oldFocus = editorTest;});
-    editorStructure.on("focus", function(){oldFocus = editorStructure;});
+    editorTest.on("focus", function() {
+        oldFocus = editorTest;
+    });
+    editorStructure.on("focus", function() {
+        oldFocus = editorStructure;
+    });
 
     // Run Structured.match when the user presses the button.
     $("#run-button").click(function(evt) {
@@ -44,8 +48,11 @@ function makeTest(structure, code, result) {
     var testCode = "";
     testCode += "structure = " + structure + ";";
     testCode += "\ncode = \" \\n \\ \n";
-    _.each(code.split("\n"), function(line) { testCode += line + "   \\n \\ \n"})
+    _.each(code.split("\n"), function(line) {
+        testCode += line + "   \\n \\ \n";
+    });
     testCode += "\"; \n";
-    testCode += "equal(Detect.matchStructure(code, structure),\n\t" + result + ", \"message\");";
+    testCode += "equal(Detect.matchStructure(code, structure),\n\t" +
+        result + ", \"message\");";
     $(".test-code").hide().html(testCode).fadeIn();
 }
