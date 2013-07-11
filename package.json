@@ -1,0 +1,32 @@
+{
+  "name": "structured",
+  "version": "0.1.0",
+  "description": "Simple interface for checking structure of JS code against a template, backed by Esprima.",
+  "main": "structured.js",
+  "scripts": {
+    "test": "node testrunner"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Khan/structuredjs.git"
+  },
+  "keywords": [
+    "parsing",
+    "analysis",
+    "ast",
+    "checker",
+    "structure"
+  ],
+  "author": "swestwood",
+  "license": "BSD",
+  "bugs": {
+    "url": "https://github.com/Khan/structuredjs/issues"
+  },
+  "dependencies": {
+    "esprima": "~1.0.3",
+    "underscore": "~1.5.1"
+  },
+  "devDependencies": {
+    "qunit": "~0.5.16"
+  }
+}
