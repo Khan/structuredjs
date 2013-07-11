@@ -21,14 +21,15 @@ if (typeof module !== "undefined" && module.exports) {
 
 (function(exports) {
 
-    /* Returns true if the code (a string) matches the structure in rawStructure
-
-    Throws an exception if code is not parseable.
-
-    Example:
-        code = "if (y > 30 && x > 13) {x += y;}";
-        rawStructure = function structure() { if(_) {} };
-        match(code, rawStructure); */
+    /*
+     * Returns true if the code (a string) matches the structure in rawStructure
+     * Throws an exception if code is not parseable.
+     *
+     * Example:
+     *     code = "if (y > 30 && x > 13) {x += y;}";
+     *     rawStructure = function structure() { if(_) {} };
+     *     match(code, rawStructure);
+     */
     function match(code, rawStructure) {
         var structure = parseStructure(rawStructure);
         var codeTree = esprima.parse(code);
@@ -42,14 +43,16 @@ if (typeof module !== "undefined" && module.exports) {
         return result;
     }
 
-    /* Returns a tree parsed out of the structure. The returned tree is an
-        abstract syntax tree with wildcard properties set to undefined.
-
-    structure is a specification looking something like:
-            function structure() {if (_) { var _ = 3; }}
-        where _ denotes a blank (anything can go there),
-        and code can go before or after any statement (only the nesting and
-            relative ordering matter). */
+    /*
+     * Returns a tree parsed out of the structure. The returned tree is an
+     *    abstract syntax tree with wildcard properties set to undefined.
+     *
+     * structure is a specification looking something like:
+     *        function structure() {if (_) { var _ = 3; }}
+     *    where _ denotes a blank (anything can go there),
+     *    and code can go before or after any statement (only the nesting and
+     *        relative ordering matter).
+     */
     function parseStructure(structure) {
         var fullTree = esprima.parse(structure.toString());
         if (!fullTree.type === "Program" || !fullTree.body.length === 1 ||
@@ -60,18 +63,20 @@ if (typeof module !== "undefined" && module.exports) {
         var tree = fullTree.body[0].body;
         simplifyTree(tree);
         return tree;
-    };
+    }
 
-    /* Recursively traverses the tree and sets _ properties to undefined
-        and empty bodies to null.
-
-        Wildcards are explicitly to undefined -- these undefined properties
-        must exist and be non-null in order for code to match the structure.
-
-        Empty statements are deleted from the tree -- they need not be matched.
-
-        If the subtree is an array, we just iterate over the array using
-         for (var key in tree) */
+    /*
+     * Recursively traverses the tree and sets _ properties to undefined
+     * and empty bodies to null.
+     *
+     *   Wildcards are explicitly set to undefined -- these undefined properties
+     *  must exist and be non-null in order for code to match the structure.
+     *
+     *  Empty statements are deleted from the tree -- they need not be matched.
+     *
+     *   If the subtree is an array, we just iterate over the array using
+     *    for (var key in tree)
+     */
     function simplifyTree(tree) {
         for (var key in tree) {
             if (!tree.hasOwnProperty(key)) {
@@ -89,21 +94,25 @@ if (typeof module !== "undefined" && module.exports) {
                 }
             }
         }
-    };
+    }
 
-    /* Returns whether or not the node is intended as a wildcard node, which
-    can be filled in by anything in others' code. */
+    /*
+     * Returns whether or not the node is intended as a wildcard node, which
+     * can be filled in by anything in others' code.
+     */
     function isWildcard(node) {
         return (node.name && node.name === "_") ||
                 (_.isArray(node.body) && node.body.length === 0);
-    };
+    }
 
-    /* Returns true if currTree matches the wildcard structure toFind.
-
-    currTree: The syntax node tracking our current place in the user's code.
-    toFind: The syntax node from the structure that we wish to find.
-    peersToFind: The remaining ordered syntax nodes that we must find after
-        toFind (and on the same level as toFind).  */
+    /*
+     * Returns true if currTree matches the wildcard structure toFind.
+     *
+     * currTree: The syntax node tracking our current place in the user's code.
+     * toFind: The syntax node from the structure that we wish to find.
+     * peersToFind: The remaining ordered syntax nodes that we must find after
+     *     toFind (and on the same level as toFind).
+     */
     function checkMatchTree(currTree, toFind, peersToFind) {
         if (_.isArray(toFind)) {
             console.error("toFind should never be an array.");
@@ -125,10 +134,12 @@ if (typeof module !== "undefined" && module.exports) {
             }
         }
         return false;
-    };
+    }
 
-    /* Returns true if this level of nodeArr matches the node in
-        toFind, and also matches all the nodes in peersToFind in order. */
+    /*
+     * Returns true if this level of nodeArr matches the node in
+     * toFind, and also matches all the nodes in peersToFind in order.
+     */
     function checkNodeArray(nodeArr, toFind, peersToFind) {
         for (var i = 0; i < nodeArr.length; i += 1) {
             if (checkMatchTree(nodeArr[i], toFind, peersToFind)) {
@@ -142,19 +153,21 @@ if (typeof module !== "undefined" && module.exports) {
             }
         }
         return false;
-    };
+    }
 
-    /* Checks whether the currNode exactly matches the node toFind.
-
-    A match is exact if for every non-null property on toFind, that
-    property exists on currNode and:
-        0. If the property is undefined on toFind, it must exist on currNode.
-        1. Otherwise, the values have the same type (ie, they match).
-        2. If the values are numbers or strings, they match.
-        3. If the values are arrays, checkNodeArray on the arrays returns true.
-        4. If the values are objects, checkMatchTree on those objects
-            returns true (the objects recursively match to the extent we
-            care about, though they may not match exactly). */
+    /*
+     * Checks whether the currNode exactly matches the node toFind.
+     *
+     * A match is exact if for every non-null property on toFind, that
+     * property exists on currNode and:
+     *     0. If the property is undefined on toFind, it must exist on currNode.
+     *     1. Otherwise, the values have the same type (ie, they match).
+     *     2. If the values are numbers or strings, they match.
+     *     3. If the values are arrays, checkNodeArray on the arrays returns true.
+     *     4. If the values are objects, checkMatchTree on those objects
+     *         returns true (the objects recursively match to the extent we
+     *         care about, though they may not match exactly).
+     */
     function exactMatchNode(currNode, toFind) {
         for (var key in toFind) {
             // Ignore inherited properties; also, null properties can be
@@ -207,10 +220,11 @@ if (typeof module !== "undefined" && module.exports) {
                 console.error("Some weird never-before-seen situation!");
                 console.error(currNode);
                 console.error(subCurr);
+                throw "Error: logic inside of structure analysis code broke.";
             }
         }
         return true;
-    };
+    }
 
     exports.match = match;
 
