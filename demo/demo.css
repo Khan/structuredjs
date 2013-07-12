@@ -1,50 +1,62 @@
 body {
-    padding: 40px;
-    padding-top: 60px;
-    background-color: #666;
+    background-color: #595959;
     font-family: helvetica;
+    margin: 30px 0px;
+    padding:0px;
+    text-align:center;
 }
-#test-code {
-    display: absolute;
-    top: 20px;
-    right: 0px;
-    bottom: 0px;
+#container {
+    width:1000px;
+    margin:0px auto;
+    text-align:left;
+}
+
+.code-editor {
+    display: inline-block;
     height: 300px;
     width: 450px;
-    left: 20px;
+    margin-top: .6em;
+    margin-left: 1em;
 }
 #structure {
-    position: absolute;
-    top: 90px;
-    left: 530px;
-    bottom: 0px;
-    height: 300px;
-    width: 450px;
+    margin-right: 2em;
 }
 #results {
     display: inline-block;
     text-transform: lowercase;
-    color: lightblue;
+    color: #f29240;
     font-weight: 200px;
     letter-spacing: 1px;
-    margin-top: 1em;
+    margin-top: .3em;
     padding: 20px;
     font-size: 1.4em
 }
 #run-button {
     font-size: 20px;
-    height: 50px;
+    border: 0px;
+    height: 44px;
     margin-left: 280px;
-    background-color: lightblue;
+    background-color: #f29240;
     width: 200px;
-    color: #333;
+    cursor: pointer;
+    color: #555;
+    letter-spacing: 1px;
+}
+#run-button:hover {
+    background-color: sandybrown;
+}
+#run-button:active {
+    position:relative;
+    top:1px;
 }
 #remaining {
-    position: absolute;
-    top: 380px;
+
 }
 .test-wrapper {
-    margin-left: 200px;
+    margin-top: 10px;
+    border-top: 2px dashed lightslategray;
+    padding-top: 10px;
+    padding-left: 200px;
     margin-bottom: 50px;
 }
 .test-code {
@@ -53,39 +65,30 @@ body {
     font-family: monospace;
     width: 500px;
 }
-.code-label {
-    position: absolute;
-    top: -320px;
-    left: 30px;
-    color: rgb(240, 240, 240);
-    font-family: helvetica;
-    font-weight: 600;
+.editor-labels {
     text-transform: lowercase;
-    font-variant: small-caps;
+    font-size: .9em;
+    font-weight: 200;
+    color: skyblue;
+    letter-spacing: 1px;
 }
 .structure-label {
-    position: absolute;
-    left: 780px;
-    top: -320px;
-    width: 9em;
-    font-family: helvetica;
-    font-weight: 600;
-    text-transform: lowercase;
-    font-variant: small-caps;
-    color: rgb(240, 240, 240);
+    margin-left: 30px;
+
+}
+.code-label {
+    margin-left: 660px;
 }
 .page-label {
-    position: absolute;
-    left: 380px;
-    top: -355px;
-    width: 10em;
+    text-align: center;
     font-family: helvetica;
-    font-weight: 600;
     letter-spacing: .2em;
     text-transform: lowercase;
     font-variant: small-caps;
     color: rgb(223, 252, 255);
-    font-size: 2em;
-    padding: 5px 50px;
-    color: lightblue;
+    font-size: 2.4em;
+    padding-bottom:.2em;
+    margin-bottom: .7em;
+    color: #f29240;
+    border-bottom: 1px solid lightslategray;
 }

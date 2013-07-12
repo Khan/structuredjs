@@ -6,21 +6,11 @@
 
 $(document).ready(function() {
     // Set up the editors (disable workers so we can run locally as well.)
-    var editorTest = ace.edit("test-code");
     var editorStructure = ace.edit("structure");
-    editorTest.getSession().setUseWorker(false);
-    editorStructure.getSession().setUseWorker(false);
-    editorTest.getSession().setMode("ace/mode/javascript");
-    editorStructure.getSession().setMode("ace/mode/javascript");
-
-    // Save the user's focus so we can restore it after the button is pressed.
-    var oldFocus = editorTest;
-    editorTest.on("focus", function() {
-        oldFocus = editorTest;
-    });
-    editorStructure.on("focus", function() {
-        oldFocus = editorStructure;
-    });
+    setupEditor(editorStructure);
+    var editorTest = ace.edit("test-code");
+    setupEditor(editorTest);
+    var oldFocus = editorStructure;
 
     // Run Structured.match when the user presses the button.
     $("#run-button").click(function(evt) {
@@ -40,12 +30,24 @@ $(document).ready(function() {
 
     // Output results on the initial load.
     $("#run-button").click();
+
+
+    function setupEditor(editor) {
+        editor.getSession().setUseWorker(false);
+        editor.getSession().setMode("ace/mode/javascript");
+        editor.renderer.setShowGutter(false);
+        editor.renderer.setPadding(6);
+        // Save the user's focus so we can restore it afterwards.
+        editor.on("focus", function() {
+            oldFocus = editor;
+        });
+    }
 });
 
 /* Generates the QUnit test code based on editor contents.
     Handles multiline string nonsense. */
 function makeTest(structure, code, result) {
-    var testCode = "";
+    var testCode = "// QUnit test code \n";
     testCode += "structure = " + structure + ";";
     testCode += "\ncode = \" \\n \\ \n";
     _.each(code.split("\n"), function(line) {

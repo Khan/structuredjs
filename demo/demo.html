@@ -14,14 +14,20 @@
     <script src="demo.js"></script>
 </head>
 <body>
-    <div id="structure">if (_) {
+  <div id="container">
+    <div class="page-label">Demo: StructuredJS</div>
+    <div class="editor-labels">
+      <span class="structure-label">Required structure</span>
+      <span class="code-label">Code to check</span>
+    </div>
+    <div id="structure" class="code-editor">if (_) {
   _ += _;
   for (_; _; _) {
       rect(_, _, 30, 30);
       foo();
   }
 }</div>
-<div id="test-code">if (y > 30 && x > 13) {
+  <div id="test-code" class="code-editor">if (y > 30 && x > 13) {
    x += y;
    for (var i = 0; i < x; i += 1) {
      rect(i, 3, 30, 30);
@@ -29,20 +35,18 @@
      foo(); /* (missing ones are not) */
    }
 }</div>
-<div id="remaining">
-    <span class="code-label">Code to check</span>
-    <button id="run-button">Test structure</button>
-    <div id="results">
-        Code results outputted here.
-    </div>
-    <span class="page-label">Demo</span>
-    <span class="structure-label">Required structure</span>
+  <div id="remaining">
+      <button id="run-button">Check match</button>
+      <div id="results">
+          Code results outputted here.
+      </div>
 
-    <div class="test-wrapper">
-        <pre class="test-code">
-            QUnit test code generated here.
-        </pre>
-    </div>
+      <div class="test-wrapper">
+          <pre class="test-code">
+              QUnit test code generated here.
+          </pre>
+      </div>
+  </div>
 </div>
 </body>
 </html>
