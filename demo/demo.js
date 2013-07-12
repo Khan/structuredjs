@@ -21,11 +21,18 @@ $(document).ready(function() {
             var result = Structured.match(code, structure);
             message = "Match: " + result;
         } catch (error) {
-            message = "Error: " + error;
+            message = error;
         }
         $("#results").hide().html(message).fadeIn();
+        $(".test-wrapper").hide();
         oldFocus.focus();
         makeTest(structure, code, result);
+    });
+
+    // Show QUnit test code
+    $(".gen-test").click(function(evt) {
+        $("#run-button").click();
+        $(".test-wrapper").show();
     });
 
     // Output results on the initial load.
