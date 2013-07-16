@@ -8,7 +8,6 @@ A structure is any valid Javascript code with contains blanks ( _ characters) an
 
 **[Try it out yourself](http://khan.github.io/structuredjs/index.html)** and see it in action.
 
-
 ### Examples
 
     var structure = function structure() {
