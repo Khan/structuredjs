@@ -43,7 +43,7 @@ if (typeof module !== "undefined" && module.exports) {
             peers = structure.body.slice(1);
         }
         var result;
-        if (wildcardVars.order.length == 0) {
+        if (wildcardVars.order.length === 0) {
             // With no vars to match, our normal greedy approach works great.
             result = checkMatchTree(codeTree, toFind, peers, wildcardVars);
         } else {
@@ -158,7 +158,7 @@ if (typeof module !== "undefined" && module.exports) {
      *  must exist and be non-null in order for code to match the structure.
      *
      *  Wildcard variables are set up such that the first occurrence of the
-     *   variable in the structure tree is set to {"wildcardVar": varName},
+     *   variable in the structure tree is set to {wildcardVar: varName},
      *   and all later occurrences just refer to wVars.values[varName],
      *   which is an object assigned during the matching algorithm to have
      *   properties identical to our guess for the node matching the variable.
@@ -184,7 +184,7 @@ if (typeof module !== "undefined" && module.exports) {
                     if (!wVars.values[varName]) {
                         // Perform setup for the first occurrence.
                         wVars.values[varName] = {};  // Filled in later.
-                        tree[key] = {"wildcardVar": varName};
+                        tree[key] = {wildcardVar: varName};
                         wVars.order.push(varName);
                         wVars.skipData[varName] = 0;
                     } else {
