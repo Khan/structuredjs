@@ -2,7 +2,7 @@
 
 Structured.js works in-browser `<script src='structured.js'></script>`, or as a standalone npm module.
 
-A structure is any valid Javascript code with contains blanks ( _ characters) and stand-ins ($str) to match values. The structure is sensitive to nesting and ordering. The matcher only requires that code contain the structure -- extra code has no effect.
+A structure is any valid Javascript code which contains blanks ( _ characters) and stand-ins ($str) to match values. The structure is sensitive to nesting and ordering. The matcher only requires that code contain the structure -- extra code has no effect.
 
 ### Demo
 
