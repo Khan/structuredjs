@@ -8,6 +8,7 @@ if (typeof global !== "undefined") {
 }
 
 var basicTests = function() {
+
     QUnit.module("Basic detection");
 
     test("Positive tests of syntax", function() {
