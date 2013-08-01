@@ -1,3 +1,4 @@
+/* CSS for the pretty display demo page. */
 body {
     background-color: white;
     font-family: Helvetica;
@@ -10,11 +11,10 @@ body {
     margin:0px auto;
     text-align:left;
 }
-
 .code-editor {
     display: inline-block;
     height: 300px;
-    width: 450px;
+    width: 400px;
     border: 1px solid gray;
     margin-top: .6em;
     margin-left: 1em;
@@ -22,57 +22,15 @@ body {
 #structure {
     margin-right: 2em;
 }
-#results {
-    display: inline-block;
-    text-transform: lowercase;
-    color: #f29240;
-    font-weight: 200px;
-    letter-spacing: 1px;
-    margin-top: .3em;
-    padding: 20px;
-    font-size: 1.4em
-}
-#run-button {
-    font-size: 20px;
-    border: 0px;
-    height: 44px;
-    margin-left: 280px;
-    background-color: #f29240;
-    width: 200px;
-    cursor: pointer;
-    color: #555;
-    letter-spacing: 1px;
-}
-#run-button:hover {
-    background-color: sandybrown;
-}
-#run-button:active {
-    position:relative;
-    top:1px;
-}
-#remaining {
 
-}
-.gen-test {
-    border-bottom: 1px dotted gray;
-}
-.gen-test:hover {
-    cursor: pointer;
-    border-bottom: 1px solid black;
-}
-.test-wrapper {
-    margin-top: 10px;
-    border-top: 2px dashed lightslategray;
-    padding-top: 10px;
-    padding-left: 200px;
-    margin-bottom: 50px;
-}
-.test-code {
-    background-color: #CECECE;
-    padding: 10px;
-    font-family: monospace;
+#pretty-display {
+    display: inline-block;
+    vertical-align: top;
     width: 500px;
+    height: 300px;
+    margin-top: .6em;
 }
+
 .editor-labels {
     text-transform: lowercase;
     font-size: .9em;
@@ -84,9 +42,10 @@ body {
     margin-left: 30px;
 
 }
-.code-label {
-    margin-left: 660px;
+.output-label {
+    margin-left: 400px;
 }
+
 .page-label {
     text-align: center;
     font-family: helvetica;
@@ -100,6 +59,7 @@ body {
     color: teal;
     border-bottom: 1px solid lightslategray;
 }
+
 footer {
     font-size: .8em;
     margin-top: 50px;
