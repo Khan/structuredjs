@@ -1,0 +1,44 @@
+/* CSS for nice formatting of structuredjs blanks and variables. */
+pre.rainbowjs span.structuredjs_blank {
+    border-bottom: 1px dashed gray;
+    padding-left: 15px;
+    padding-right: 15px;
+    color: lightgray;
+    line-height: 2;
+}
+pre.rainbowjs span.structuredjs_var {
+    border: 1px dotted darkgray;
+    padding-left: 15px;
+    padding-right: 15px;
+    background-color: white;
+    color: white;
+    line-height: 2;
+}
+pre.rainbowjs span.structuredjs_var.one {
+    background-color: rgb(250, 222, 199);
+    border-color: darkorange;
+}
+pre.rainbowjs span.structuredjs_var.two {
+    background-color: rgb(248, 232, 248);
+    border: 1px dotted rgb(238, 130, 238);
+}
+pre.rainbowjs span.structuredjs_var.three {
+    background-color: rgb(209, 217, 248);
+    border-color: rgb(142, 142, 202);
+}
+pre.rainbowjs span.structuredjs_var.four {
+    background-color: rgb(252, 204, 204);
+    border-color: salmon;
+}
+pre.rainbowjs span.structuredjs_var.five {
+    background-color: rgb(182, 255, 185);
+    border-color: rgb(79, 189, 57);
+}
+pre.rainbowjs span.structuredjs_var.six {
+    background-color: rgb(207, 255, 253);
+    border-color: rgb(42, 174, 199);
+}
+pre.rainbowjs span.structuredjs_var.seven {
+    background-color: rgb(253, 242, 162);
+    border-color: rgb(172, 166, 99);
+}

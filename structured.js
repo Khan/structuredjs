@@ -343,6 +343,79 @@ if (typeof module !== "undefined" && module.exports) {
         return true;
     }
 
+
+    /*
+     * Takes in a string for a structure and returns HTML for nice styling.
+     * The blanks (_) are enclosed in span.structuredjs_blank, and the
+     * structured.js variables ($someVar) are enclosed in span.structuredjs_var
+     * for special styling.
+     *
+     * See pretty-display/index.html for a demo and sample stylesheet.
+     *
+     * Only works when RainbowJS (http://craig.is/making/rainbows) is
+     * included on the page; if RainbowJS is not available, simply
+     * returns the code string. RainbowJS is not available as an npm
+     * module.
+     */
+    function prettyHtml(code, callback) {
+        if (!Rainbow) {
+            return code;
+        }
+        Rainbow.color(code, "javascript", function(formattedCode) {
+            var output = ("<pre class='rainbowjs'>" + addStyling(formattedCode)
+                + "</pre>");
+            callback(output);
+        });
+    }
+
+    /*
+     * Helper function for prettyHtml that takes in a string (the formatted
+     * output of RainbowJS) and inserts special StructuredJS spans for
+     * blanks (_) and variables ($something).
+     *
+     * The optional parameter maintainStyles should be set to true if the
+     * caller wishes to keep the class assignments from the previous call
+     * to addStyling and continue where we left off. This parameter is
+     * valuable for visual consistency across different structures that share
+     * variables.
+     */
+    function addStyling(code, maintainStyles) {
+        // First replace underscores with empty structuredjs_blank spans
+        if (!maintainStyles) {
+            addStyling.styleMap = {};
+            addStyling.counter = 0;
+        }
+        // Regex: Match any underscore _ that is not preceded or followed by an
+        // alphanumeric character.
+        code = code.replace(/([^A-Za-z0-9])_(?![A-Za-z0-9])/g,
+            "$1<span class='structuredjs_blank'></span>")
+        // Next replace variables with empty structuredjs_var spans numbered
+        // with classes.
+        // Regex: Match any $ that is not preceded by an alphanumeric
+        // character, but is followed by at least one alphanumeric character
+        // (the variable name).
+        var regexVariables = /([^A-Za-z0-9])\$(\w+)/g
+        return code.replace(regexVariables, function(m, prev, varName) {
+            fn = addStyling;
+            if (!(varName in fn.styleMap)) {
+                fn.styleMap[varName] = (fn.counter < fn.styles.length ?
+                    fn.styles[fn.counter] : "extra");
+                fn.counter += 1;
+            }
+            var varClass = fn.styleMap[varName];
+            return (prev + "<span class='structuredjs_var " + varClass + "'>" +
+                "</span>");
+        })
+    }
+    // Store some properties on the addStyling function to maintain the
+    // styleMap between runs if desired.
+    // Right now just support 7 different variables. Just add more if needed.
+    addStyling.styles = ["one", "two", "three", "four", "five", "six",
+        "seven"];
+    addStyling.styleMap = {};
+    addStyling.counter = 0;
+
     exports.match = match;
+    exports.prettify = prettyHtml;
 
 })(exports);
