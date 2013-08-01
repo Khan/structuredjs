@@ -34,13 +34,15 @@
       <span class="output-label">Pretty</span>
     </div>
 
-    <div id="structure" class="code-editor">if (_) {
+    <div id="structure" class="code-editor">$foo = fn(_);
+if (_) {
   _ += _;
   for (var $a = _; $a < $b; $a += _) {
       rect($a, $b, 30, 30);
       _();
   }
-  $foo = $bar + $baz + _;
+  $foo = $bar($baz + _);
+  $bar($foo);
 }</div>
 
   <div id="pretty-display">The pretty code goes here.</div>

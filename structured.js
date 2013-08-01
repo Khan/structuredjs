@@ -362,8 +362,8 @@ if (typeof module !== "undefined" && module.exports) {
             return code;
         }
         Rainbow.color(code, "javascript", function(formattedCode) {
-            var output = ("<pre class='rainbowjs'>" + addStyling(formattedCode)
-                + "</pre>");
+            var output = ("<pre class='rainbowjs'>" +
+                addStyling(formattedCode) + "</pre>");
             callback(output);
         });
     }
@@ -380,32 +380,57 @@ if (typeof module !== "undefined" && module.exports) {
      * variables.
      */
     function addStyling(code, maintainStyles) {
-        // First replace underscores with empty structuredjs_blank spans
         if (!maintainStyles) {
             addStyling.styleMap = {};
             addStyling.counter = 0;
         }
+        // First replace underscores with empty structuredjs_blank spans
         // Regex: Match any underscore _ that is not preceded or followed by an
         // alphanumeric character.
-        code = code.replace(/([^A-Za-z0-9])_(?![A-Za-z0-9])/g,
-            "$1<span class='structuredjs_blank'></span>")
+        code = code.replace(/(^|[^A-Za-z0-9])_(?![A-Za-z0-9])/g,
+            "$1<span class='structuredjs_blank'></span>");
         // Next replace variables with empty structuredjs_var spans numbered
         // with classes.
-        // Regex: Match any $ that is not preceded by an alphanumeric
-        // character, but is followed by at least one alphanumeric character
-        // (the variable name).
-        var regexVariables = /([^A-Za-z0-9])\$(\w+)/g
-        return code.replace(regexVariables, function(m, prev, varName) {
-            fn = addStyling;
-            if (!(varName in fn.styleMap)) {
-                fn.styleMap[varName] = (fn.counter < fn.styles.length ?
-                    fn.styles[fn.counter] : "extra");
-                fn.counter += 1;
+        // This regex is in two parts:
+        //  Part 1, delimited by the non-capturing parentheses `(?: ...)`:
+        //    (^|[^\w])\$(\w+)
+        //    Match any $ that is preceded by either a 'start of line', or a
+        //    non-alphanumeric character, and is followed by at least one
+        //    alphanumeric character (the variable name).
+        //  Part 2, also delimited by the non-capturing parentheses:
+        //      ()\$<span class="function call">(\w+)<\/span>
+        //      Match any function call immediately preceded by a dollar sign,
+        //      where the Rainbow syntax highlighting separated a $foo()
+        //      function call by placing the dollar sign outside.
+        //      the function call span to create
+        //      $<span class="function call">foo</span>.
+        // We combine the two parts with an | (an OR) so that either matches.
+        // The reason we do this all in one go rather than in two separate
+        // calls to replace is so that we color the string in order,
+        // rather than coloring all non-function calls and then going back
+        // to do all function calls (a minor point, but otherwise the
+        // interactive pretty display becomes jarring as previous
+        // function call colors change when new variables are introduced.)
+        // Finally, add the /g flag for global replacement.
+        var regexVariables = /(?:(^|[^\w])\$(\w+))|(?:\$<span class="function call">(\w+)<\/span>)/g;
+        return code.replace(regexVariables,
+            function(m, prev, varName, fnVarName) {
+                // Necessary to handle the fact we are essentially performing
+                // two regexes at once as outlined above.
+                prev = prev || "";
+                varName = varName || fnVarName;
+                var fn = addStyling;
+                // Assign the next available class to this variable if it does
+                // not yet exist in our style mapping.
+                if (!(varName in fn.styleMap)) {
+                    fn.styleMap[varName] = (fn.counter < fn.styles.length ?
+                        fn.styles[fn.counter] : "extra");
+                    fn.counter += 1;
+                }
+                return (prev + "<span class='structuredjs_var " +
+                    fn.styleMap[varName] + "'>" + "</span>");
             }
-            var varClass = fn.styleMap[varName];
-            return (prev + "<span class='structuredjs_var " + varClass + "'>" +
-                "</span>");
-        })
+        );
     }
     // Store some properties on the addStyling function to maintain the
     // styleMap between runs if desired.
