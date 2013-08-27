@@ -18,6 +18,7 @@ body {
     border: 1px solid gray;
     margin-top: .6em;
     margin-left: 1em;
+    margin-bottom: 1.6em;
 }
 #structure {
     margin-right: 2em;
@@ -36,7 +37,7 @@ body {
     font-size: 20px;
     border: 0px;
     height: 44px;
-    margin-left: 280px;
+    margin-left: 1em;
     background-color: #f29240;
     width: 200px;
     cursor: pointer;
@@ -50,8 +51,29 @@ body {
     position:relative;
     top:1px;
 }
+#result-wrapper {
+    display: inline-block;
+    width: 400px;
+    vertical-align: top;
+}
+.match-fail-message {
+    margin: 1em;
+    margin-left: 3em;
+    color: #666;
+}
+
 #remaining {
 
+}
+
+#var-callbacks {
+    visibility: hidden;
+}
+.var-callbacks-show-hide {
+    margin-left: 2em;
+    cursor: pointer;
+    padding: 2px 6px;
+    background-color: #DDD;
 }
 .gen-test {
     border-bottom: 1px dotted gray;
@@ -71,7 +93,7 @@ body {
     background-color: #CECECE;
     padding: 10px;
     font-family: monospace;
-    width: 500px;
+    width: 600px;
 }
 .editor-labels {
     text-transform: lowercase;

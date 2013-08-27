@@ -10,29 +10,44 @@ $(document).ready(function() {
     setupEditor(editorStructure);
     var editorTest = ace.edit("test-code");
     setupEditor(editorTest);
+    var editorCallbacks = ace.edit("var-callbacks");
+    setupEditor(editorCallbacks);
     var oldFocus = editorStructure;
 
     // Run Structured.match when the user presses the button.
     $("#run-button").click(function(evt) {
         var structure = "function() {\n" + editorStructure.getValue() + "\n}";
         var code = editorTest.getValue();
-        var message;
+        //  Pull in the object with function callbacks.
+        eval("var varCallbacks = " + editorCallbacks.getValue());
+        var message, errorMessage;
         try {
-            var result = Structured.match(code, structure);
+            var result = Structured.match(code, structure,
+                {varCallbacks: varCallbacks});
             message = "Match: " + result;
+            errorMessage = varCallbacks.failure || "";
         } catch (error) {
-            message = error;
+            message = "";
+            errorMessage = error;
         }
         $("#results").hide().html(message).fadeIn();
+        $(".match-fail-message").html(errorMessage);
         $(".test-wrapper").hide();
         oldFocus.focus();
-        makeTest(structure, code, result);
+        makeTest(structure, code, editorCallbacks.getValue(), result);
     });
 
     // Show QUnit test code
     $(".gen-test").click(function(evt) {
         $("#run-button").click();
         $(".test-wrapper").show();
+    });
+
+
+    $(".var-callbacks-show-hide").click(function(evt) {
+        $("#var-callbacks").css('visibility', function(i, visibility) {
+            return visibility === "visible" ? "hidden" : "visible";
+        });
     });
 
     // Output results on the initial load.
@@ -53,15 +68,17 @@ $(document).ready(function() {
 
 /* Generates the QUnit test code based on editor contents.
     Handles multiline string nonsense. */
-function makeTest(structure, code, result) {
+function makeTest(structure, code, editorCallbacks, result) {
     var testCode = "// QUnit test code \n";
-    testCode += "structure = " + structure + ";";
+    testCode += "editorCallbacks = " + editorCallbacks + ";";
+    testCode += "\nstructure = " + structure + ";";
     testCode += "\ncode = \" \\n \\ \n";
     _.each(code.split("\n"), function(line) {
         testCode += line + "   \\n \\ \n";
     });
     testCode += "\"; \n";
-    testCode += "equal(Structured.match(code, structure),\n\t" +
+    testCode += "equal(Structured.match(code, structure, " +
+        "{editorCallbacks: editorCallbacks}),\n\t" +
         result + ", \"message\");";
     $(".test-code").hide().html(testCode).fadeIn();
 }

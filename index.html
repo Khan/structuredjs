@@ -32,26 +32,56 @@
     </div>
     <div id="structure" class="code-editor">if (_) {
   _ += _;
-  for (var $a = _; $a < $b; $a += _) {
-      rect($a, $b, 30, 30);
+  for (var $a = $start; $a < $check; $a += _) {
+      rect($a, $bigNum, 30, 30);
       _();
   }
 }</div>
+
   <div id="test-code" class="code-editor">if (y > 30 && x > 13) {
    x += y;
-   for (var i = 0; i < 100; i += 1) {
-     rect(i, 100, 30, 30);
+   for (var i = 0; i < 99; i += 1) {
+     rect(i, 300, 30, 30);
      bar();
      x = i + 2;
    }
 }</div>
+
+  <div class="editor-labels">
+    <span class="var-callbacks-label">Variable callbacks (optional)</span>
+    <span class="var-callbacks-show-hide"><small>show/hide</small></span>
+  </div>
+  <div id="var-callbacks" class="code-editor">// Optional extra functionality for variables.
+// Uncomment this code -- select it then cmd-/ or ctrl-/
+{
+//   "$start, $check": function(start, check) {
+//       if (check.value < start.value) {
+//         return {"failure": "Double-check your for loop!"}
+//       }
+//       return true;
+//   },
+//   "$bigNum": function(bigNum) {
+//     if (bigNum.value < 1000) {
+//       return {"failure": "Your number is not big enough! " + bigNum.value}
+//     }
+//     return true;
+//   }
+}
+</div>
+
+
+  <div id="result-wrapper">
+    <button id="run-button">Check match</button>
+    <div id="results">
+        (Match result here)
+    </div>
+    <div class="match-fail-message">
+      (Fail message here)
+    </div>
+  </div>
+
   <div id="remaining">
     <span class="gen-test"><small>generate qunit test</small></span>
-      <button id="run-button">Check match</button>
-      <div id="results">
-          Code results outputted here.
-      </div>
-
       <div class="test-wrapper">
           <pre class="test-code">
               QUnit test code generated here.
