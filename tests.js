@@ -47,7 +47,7 @@ var basicTests = function() {
             "Basic function assignment into var matches.");
 
         ok(Structured.match("function foo() {return x+2;}",
-            function() { function _() {};}),
+            function() { function _() {}}),
             "Basic standalone function declaration matches.");
 
         ok(Structured.match("rect();",
@@ -78,11 +78,11 @@ var basicTests = function() {
     test("Negative tests of syntax", function() {
 
         equal(Structured.match("if (y > 30 && x > 13) {x += y;}",
-            function() { if (_) {_} else {}}),
+            function() { if (_) {_;} else {}}),
             false,
             "If-else does not match only an if.");
 
-        equal(Structured.match("if (y > 30 && x > 13) {x += y;} else {y += 2;}",
+        equal(Structured.match("if(y > 30 && x > 13) {x += y;} else {y += 2;}",
             function() { if (_) {} else if (_) {} else {}}),
             false,
             "If, else if, else structure does not match only if else.");
@@ -103,9 +103,9 @@ var basicTests = function() {
             "Basic function declaration does not match basic var declaration");
 
         equal(Structured.match("var test = function foo() {return 3+2;}",
-            function() { function _() {};}),
+            function() { function _() {}}),
             false,
-            "Function declaration does not match function assignment into var");
+            "Function declaration doesn't match function assignment into var");
 
         equal(Structured.match("rect();",
             function() { ellipse(); }),
@@ -145,7 +145,7 @@ var clutterTests = function() {
         var structure, code;
 
         ok(Structured.match("if (y > 30 && x > 13) {x += y;} \
-            else if(x <10) {y -= 20;} else { y += 2;}",
+            else if (x <10) {y -= 20;} else { y += 2;}",
             function() { if (_) {} else {}}),
             "Extra else-if statement correctly allowed though not specified.");
 
@@ -356,6 +356,269 @@ var combinedTests = function() {
     });
 };
 
+var varCallbackTests = function() {
+    QUnit.module("User-defined variable callbacks");
+    test("Basic single variable callbacks", function() {
+        var structure, code;
+
+        equal(Structured.match("var x = 10; var y = 20;",
+            function() {var _ = $a;}, {
+                "varCallbacks": {
+                    "$a": function(obj) {
+                        return false;
+                    }
+                }
+            }),
+            false, "Always false varCallback causes failure.");
+
+        equal(Structured.match("var x = 10; var y = 20; var k = 42;",
+            function() {var _ = $a; var _ = $b;}, {
+                "varCallbacks": {
+                    "$a": function(obj) {
+                        return false;
+                    },
+                    "$b": function(obj) {
+                        return true;
+                    }
+                }
+            }),
+            false, "One always false varCallback of two causes failure.");
+
+        equal(Structured.match("var x = 10; var y = 20;",
+            function() {var _ = $a;}, {
+                "varCallbacks": {
+                    "$a": function(obj) {
+                        return true;
+                    }
+                }
+            }),
+            true, "Always true varCallback still matches.");
+
+        equal(Structured.match("var x = 10; var y = 20;",
+            function() {var z = $a;}, {
+                "varCallbacks": {
+                    "$a": function(obj) {
+                        return true;
+                    }
+                }
+            }),
+            false, "Always true varCallback with no match does not match.");
+
+        equal(Structured.match("var x = 10; var y = 20; var z = 40;",
+            function() {var _ = $a;}, {
+                "varCallbacks": {
+                    "$a": function(obj) {
+                        return obj.type === "Literal" && obj.value === 40;
+                    }
+                }
+            }),
+            true, "Basic single-matching var callback matches.");
+
+        equal(Structured.match("var x = 10; var y = 20; var z = 40;",
+            function() {var _ = $a; var _ = $b;}, {
+                "varCallbacks": {
+                    "$a": function(obj) {
+                        return obj.type === "Literal" && obj.value > 11;
+                    },
+                    "$b": function(obj) {
+                        return obj.type === "Literal" && obj.value > 30;
+                    }
+                }
+            }),
+            true, "Two single-matching var callbacks match correctly.");
+
+        equal(Structured.match("var x = 10; var y = 20; var z = 40;",
+            function() {var _ = $a; var _ = $b;}, {
+                "varCallbacks": {
+                    "$a": function(obj) {
+                        return obj.type === "Literal" && obj.value > 11;
+                    },
+                    "$b": function(obj) {
+                        return obj.type === "Literal" && obj.value < 11;
+                    }
+                }
+            }),
+            false, "Two single-matching var callbacks still need ordering.");
+
+
+        var varCallbacks;
+        varCallbacks = {
+            "$a": function(obj) {
+                return {"failure": "Nothing can match $a!"};
+            }
+        };
+        var result = Structured.match("var x = 10; var y = 20",
+            function() {var $a = _;}, {"varCallbacks": varCallbacks});
+        equal(result, false, "Returning failure object will be false");
+        equal(varCallbacks.failure, "Nothing can match $a!",
+            "Failure message is correctly set, basic.");
+
+        varCallbacks = {
+            "$a": function(obj) {
+                return true;
+            },
+            "$b": function(obj) {
+                if (obj.value > 30) {
+                    return true;
+                }
+                return {"failure": "Make sure the value is big"}
+            }
+        };
+        var result = Structured.match("var x = 10; var y = 20; var c = 0;",
+            function() {var $a = $b;}, {"varCallbacks": varCallbacks});
+        equal(result, false, "Returning failure object is false");
+        equal(varCallbacks.failure, "Make sure the value is big",
+            "Failure message is correctly set, basic.");
+
+        varCallbacks = {
+            "$a": function(obj) {
+                return true;
+            },
+            "$b": function(obj) {
+                if (obj.value > 90) {
+                    return true;
+                }
+                return {"failure": "Make sure the value is big"};
+            }
+        };
+        var result = Structured.match("var x = 10; var y = 20; var c = 100;",
+            function() {var $a = $b;}, {"varCallbacks": varCallbacks});
+        equal(result, true, "Matches still work around failure messages");
+        equal(varCallbacks.failure, undefined,
+            "Failure message is not set if no failure.");
+    });
+
+    test("More complicated single variable callbacks", function() {
+        var code, structure, varCallbacks;
+        structure = function() {
+            var $a = _, _ = $val;
+            var $d = function() {};
+            var draw = function() {
+                var $b = $a + _;
+                $d(_, $e, $b, _);
+                $d($a);
+                $a = $e.length;
+            };
+        };
+        code = " \n \
+        var a = 10, z = 3, b = 20, y = 1, k = foo();   \n \
+        var bar = function(x) {return x + 3;};   \n \
+        var foo = function(x) {return x + 3;};   \n \
+        var draw = function() {   \n \
+            var t = z + y;   \n \
+            foo(t);   \n \
+            foo(3, 'falcon', t, 10);   \n \
+            foo(3, 'eagle', t, 10);   \n \
+            test(z);   \n \
+            foo(z);   \n \
+            z = 'falcon'.length;   \n \
+            z = 'eagle'.length;   \n \
+        }   \n \
+        ";
+        var varCallbacks = {
+            "$e": function(obj) {
+                return obj.value === "eagle";
+            },
+            "$val": function(obj) {
+                return (obj.type === "CallExpression" &&
+                    obj.callee.name === "foo");
+            }
+        };
+        equal(Structured.match(code, structure, {varCallbacks: varCallbacks}),
+            true, "Complex with parameters, function names, etc works.");
+    });
+
+    test("Multiple variable callbacks", function() {
+        var varCallbacks, code, structure, result;
+        varCallbacks = {
+            "$a, $b": function(a, b) {
+                return a.value > b.value;
+            }
+        };
+        result = Structured.match("var x = 50; var y = 20;",
+            function() {var _ = $a; var _ = $b;},
+            {"varCallbacks": varCallbacks});
+        equal(result, true, "Simple multiple variable callback works.");
+
+
+        varCallbacks = {
+            "$a, $b": function(a, b) {
+                return a.value > b.value;
+            }
+        };
+        result = Structured.match("var x = 50; var y = 20;",
+            function() {var _ = $a; var _ = $b;},
+            {"varCallbacks": varCallbacks});
+        equal(result, true, "Simple multiple variable callback works.");
+
+
+        varCallbacks = {
+            "$a,$b,   $c": function(a, b, c) {
+                return a.value > b.value && c.value !== 40;
+            }
+        };
+        equal(Structured.match("var a = 3; var b = 1; var c = 4;",
+            function() {var a = $a; var b = $b; var c = $c;}),
+            true, "Trim from left works.");
+
+
+        // TODO test more involved var callbacks.
+        varCallbacks = {
+            "$c, $a, $b": function(c, a, b) {
+                return a.value > b.value;
+            },
+            "$c": function(c) {
+                return c.type === "Identifier" && c.name !== "foo";
+            },
+            "$c, $d, $e": function(c, d, e) {
+                return d.value === e.value;
+            }
+        };
+        structure = function() {
+            _ += $a + $b;
+            $c($e, $d);
+        };
+        code = "tree += 30 + 50 + 10; plant(40, 20); forest(30, 30);";
+        result = Structured.match(code, structure,
+            {"varCallbacks": varCallbacks});
+        equal(result, true, "Multiple multiple-var callbacks work.");
+
+        code = ("tree += 30 + 50 + 70; plant(40, 0) + forest(30, 30);" +
+            "tree += 30 + 50 + 10; plant(40, 0) + forest(30, 60);");
+        result = Structured.match(code, structure,
+            {"varCallbacks": varCallbacks});
+        equal(result, false, "False multiple multiple-var callbacks work.");
+        equal(varCallbacks.failure, undefined,
+            "No failure message if none specified.");
+
+
+        varCallbacks = {
+            "$red, $green, $blue": function(red, green, blue) {
+                if (red.value < 50) {
+                    return {"failure": "Red must be greater than 50"};
+                }
+                if (green.value < blue.value) {
+                    return {"failure": "Use more green than blue"};
+                }
+                return true;
+            }
+        };
+        structure = function() {
+            fill($red, $green, $blue);
+        };
+        result = Structured.match("var foo = 5; foo += 2; fill(100, 40, 200);",
+            structure, {"varCallbacks": varCallbacks});
+        equal(result, false, "False RGB matching works.");
+        equal(varCallbacks.failure, "Use more green than blue",
+            "False RGB message works");
+
+        result = Structured.match("var foo = 5; foo += 2; fill(100, 40, 2);",
+            structure, {"varCallbacks": varCallbacks});
+        equal(result, true, "True RGB matching works.");
+        equal(varCallbacks.failure, undefined, "True RGB message works");
+    });
+};
+
 var wildcardVarTests = function() {
     QUnit.module("Wildcard variables");
     test("Simple wildcard tests", function() {
@@ -466,6 +729,7 @@ var runAll = function() {
     drawingTests();
     peerTests();
     wildcardVarTests();
+    varCallbackTests();
     combinedTests();
 };
 

@@ -25,11 +25,42 @@ if (typeof module !== "undefined" && module.exports) {
      * Throws an exception if code is not parseable.
      *
      * Example:
-     *     code = "if (y > 30 && x > 13) {x += y;}";
-     *     rawStructure = function structure() { if(_) {} };
+     *     var code = "if (y > 30 && x > 13) {x += y;}";
+     *     var rawStructure = function structure() { if(_) {} };
      *     match(code, rawStructure);
+     *
+     * options.varCallbacks is an object that maps user variable strings like
+     *  "$myVar", "$a, $b, $c" etc to callbacks. These callbacks receive the
+     *  potential Esprima structure values assigned to each of the user
+     *  variables specified in the string, and can accept/reject that value
+     *  by returning true/false. The callbacks can also specify a failure
+     *  message instead by returning an object of the form
+     *  {failure: "Your failure message"}, in which case the message will be
+     *  returned as the property "failure" on the varCallbacks object if
+     *  there is no valid match. A valid matching requires that every
+     *  varCallback return true.
+     *
+     * Advanced Example:
+     *    var varCallbacks = {
+     *     "$foo": function(fooObj) {
+     *         return fooObj.value > 92;
+     *     },
+     *     "$foo, $bar, $baz": function(fooObj, barObj, bazObj) {
+     *         if (fooObj.value > barObj.value) {
+     *            return {failure: "Check the relationship between values."};
+     *         }
+     *         return bazObj !== 48;
+     *     }
+     *   };
+     *   var code = "var a = 400; var b = 120; var c = 500; var d = 49;";
+     *   var rawStructure = function structure() {
+     *       var _ = $foo; var _ = $bar; var _ = $baz;
+     *   };
+     *   match(code, rawStructure, {varCallbacks: varCallbacks});
      */
-    function match(code, rawStructure) {
+    function match(code, rawStructure, options) {
+        options = options || {};
+        var varCallbacks = options.varCallbacks || {};
         var wildcardVars = {order: [], skipData: {}, values: {}};
         // Note: After the parse, structure contains object references into
         // wildcardVars[values] that must be maintained. So, beware of
@@ -49,7 +80,7 @@ if (typeof module !== "undefined" && module.exports) {
         } else {
             // If there are variables to match, we must do a potentially
             // exhaustive search across the possible ways to match the vars.
-            result = anyPossible(0, wildcardVars);
+            result = anyPossible(0, wildcardVars, varCallbacks);
         }
         return result;
 
@@ -80,7 +111,7 @@ if (typeof module !== "undefined" && module.exports) {
          *         (used during the match algorithm)
          *     .order[i] is the name of the ith occurring variable.
          */
-        function anyPossible(i, wVars) {
+        function anyPossible(i, wVars, varCallbacks) {
             var order = wVars.order;  // Just for ease-of-notation.
             wVars.skipData[order[i]] = 0;
             do {
@@ -103,10 +134,11 @@ if (typeof module !== "undefined" && module.exports) {
                     wVars.leftToSkip = _.extend({}, wVars.skipData);
                     // Use a copy of peers because peers is destructively
                     // modified in checkMatchTree (via checkNodeArray).
-                    if (checkMatchTree(codeTree, toFind, peers.slice(), wVars)) {
+                    if (checkMatchTree(codeTree, toFind, peers.slice(), wVars) &&
+                        checkUserVarCallbacks(wVars, varCallbacks)) {
                         return true;
                     }
-                } else if (anyPossible(i + 1, wVars)) {
+                } else if (anyPossible(i + 1, wVars, varCallbacks)) {
                     return true;
                 }
                 // This guess didn't work out -- skip it and try the next.
@@ -118,6 +150,82 @@ if (typeof module !== "undefined" && module.exports) {
                 // previous vars (set by skipData).
             } while (!_.isEmpty(wVars.values[order[i]]));
             return false;
+        }
+    }
+
+    /*
+     * Checks the user-defined variable callbacks and returns a boolean for
+     *   whether or not the wVars assignment of the wildcard variables results
+     *   in every varCallback returning true as required.
+     *
+     * If any varCallback returns false, this function also returns false.
+     *
+     * Format of varCallbacks: An object containing:
+     *     keys of the form: "$someVar" or "$foo, $bar, $baz" to mimic an
+     *        array (as JS keys must be strings).
+     *     values containing function callbacks. These callbacks must return
+     *        true/false. They may alternately return an object of the form
+     *        {failure: "The failure message."}. If the callback returns the
+     *        failure object, then the relevant failure message will be returned
+     *        via varCallbacks.failure.
+     *        These callbacks are passed a parameter list corresponding to
+     *         the Esprima parse structures assigned to the variables in
+     *         the key (see example).
+     *
+     * Example varCallbacks object:
+     *    {
+     *     "$foo": function(fooObj) {
+     *         return fooObj.value > 92;
+     *     },
+     *     "$foo, $bar, $baz": function(fooObj, barObj, bazObj) {
+     *         if (fooObj.value > barObj.value) {
+     *            return {failure: "Check the relationship between values."}
+     *         }
+     *         return bazObj !== 48;
+     *     }
+     *   }
+     */
+    function checkUserVarCallbacks(wVars, varCallbacks) {
+        // Clear old failure message if needed
+        delete varCallbacks.failure;
+        for (var property in varCallbacks) {
+            // Property strings may be "$foo, $bar, $baz" to mimic arrays.
+            var varNames = property.split(",");
+            var varValues = _.map(varNames, function(varName) {
+                varName = stringLeftTrim(varName);  // Trim whitespace
+                // If the var name is in the structure, then it will always
+                // exist in wVars.values after we find a match prior to
+                // checking the var callbacks. So, if a variable name is not
+                // defined here, it is because that var name does not exist in
+                // the user-defined structure.
+                if (!_.has(wVars.values, varName)) {
+                    console.error("Callback var " + varName + " doesn't exist");
+                    return undefined;
+                }
+                // Convert each var name to the Esprima structure it has
+                // been assigned in the parse. Make a deep copy.
+                return JSON.parse(JSON.stringify(wVars.values[varName]));
+            });
+            // Call the user-defined callback, passing in the var values as
+            // parameters in the order that the vars were defined in the
+            // property string.
+            var result = varCallbacks[property].apply(null, varValues);
+            if (!result || _.has(result, "failure")) {
+                // Set the failure message if the user callback provides one.
+                if (_.has(result, "failure")) {
+                    varCallbacks.failure = result.failure;
+                }
+                return false;
+            }
+        }
+        return true;
+
+        /* Trim is only a string method in IE9+, so use a regex if needed. */
+        function stringLeftTrim(str) {
+            if (String.prototype.trim) {
+                return str.trim();
+            }
+            return str.replace(/^\s+|\s+$/g, "");
         }
     }
 
@@ -442,5 +550,4 @@ if (typeof module !== "undefined" && module.exports) {
 
     exports.match = match;
     exports.prettify = prettyHtml;
-
 })(exports);
