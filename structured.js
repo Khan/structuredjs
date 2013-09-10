@@ -253,6 +253,9 @@ if (typeof module !== "undefined" && module.exports) {
         return tree;
     }
 
+    /*
+     * Constant folds the syntax tree
+     */
     function foldConstants(tree) {
         for (var key in tree) {
             if (!tree.hasOwnProperty(key)) {
