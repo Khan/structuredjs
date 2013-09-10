@@ -67,6 +67,7 @@ if (typeof module !== "undefined" && module.exports) {
         // JSON.parse(JSON.stringify), etc. as the tree is no longer static.
         var structure = parseStructure(rawStructure, wildcardVars);
         var codeTree = esprima.parse(code);
+        foldConstants(codeTree);
         var toFind = structure.body;
         var peers = [];
         if (_.isArray(structure.body)) {
@@ -247,8 +248,41 @@ if (typeof module !== "undefined" && module.exports) {
             throw "Poorly formatted structure code";
         }
         var tree = fullTree.body[0].expression.body;
+        foldConstants(tree);
         simplifyTree(tree, wVars);
         return tree;
+    }
+
+    function foldConstants(tree) {
+        for (var key in tree) {
+            if (!tree.hasOwnProperty(key)) {
+                continue;  // Inherited property
+            }
+            
+            var ast = tree[key];
+            if (_.isObject(ast)) {
+                foldConstants(ast);
+
+                /*
+                 * Currently, we only fold + and - applied to a number literal.
+                 * This is easy to extend, but it means we lose the ability to match
+                 * potentially useful expressions like 5 + 5 with a pattern like _ + _.
+                 */
+                if (ast.type == esprima.Syntax.UnaryExpression) {
+                    var argument = ast.argument;
+                    if (argument.type === esprima.Syntax.Literal &&
+                        _.isNumber(argument.value)) {
+                        if (ast.operator === "-") {
+                            argument.value = -argument.value;
+                            tree[key] = argument;
+                        } else if (ast.operator === "+") {
+                            argument.value = +argument.value;
+                            tree[key] = argument;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /*

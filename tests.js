@@ -619,6 +619,35 @@ var varCallbackTests = function() {
     });
 };
 
+var constantFolding = function() {
+    QUnit.module("Constant folding");
+    test("Simple constant folding", function() {
+        ok(Structured.match("var x = -5;",
+            function() { var x = $num; },{
+                "varCallbacks": {
+                    "$num": function(num) {
+                        return num && num.value && num.value < 0;
+                    }
+                }
+            }),
+            "Unary - operator folded on number literals.");
+
+        ok(Structured.match("var x = +5;",
+            function() { var x = $num; },{
+                "varCallbacks": {
+                    "$num": function(num) {
+                        return num && num.value && num.value > -10;
+                    }
+                }
+            }),
+            "Unary + operator folded on number literals.");
+
+        ok(Structured.match("var y = 10; var x = +y; x = -y;",
+            function() { var x = +$var; x = -$var; }),
+            "Unary + - operators work on non-literals.");
+    });
+};
+
 var wildcardVarTests = function() {
     QUnit.module("Wildcard variables");
     test("Simple wildcard tests", function() {
@@ -722,6 +751,28 @@ var wildcardVarTests = function() {
     });
 };
 
+var nestingOrder = function() {
+    QUnit.module("Nesting order");
+    /*
+     * A structure implicitly applies a partial order constraint on
+     * the nesting "levels" of expressions. In particular, if pattern
+     * expression A lexically appears before pattern expression B, then
+     * any binding of concrete expressions to A and B implies that B is
+     * nested at the same or deeper level than A.
+     */
+    test("Simple nesting tests", function() {
+            var structure, code;
+
+            ok(Structured.match("var x = 5; while(true) { var y = 6; }",
+                function() { var x = 5; var y = 6; }),
+                "Downward expression ordering works.")
+
+            ok(!Structured.match("while(true) { var x = 5; } var y = 6;",
+                function() { var x = 5; var y = 6; }),
+                "Upward expression ordering fails.")
+        });
+};
+
 var runAll = function() {
     basicTests();
     clutterTests();
@@ -730,7 +781,9 @@ var runAll = function() {
     peerTests();
     wildcardVarTests();
     varCallbackTests();
+    constantFolding();
     combinedTests();
+    nestingOrder();
 };
 
 runAll();
