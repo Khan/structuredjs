@@ -5,21 +5,26 @@
  *
  * Dependencies: esprima.js, underscore.js
  */
+(function(global) {
+    /* Detect npm versus browser usage */
+    var exports;
+    var esprima;
+    var _;
 
-/* Detect npm versus browser usage */
-var exports;
-if (typeof module !== "undefined" && module.exports) {
-    exports = module.exports = {};
-    var esprima = require("esprima");
-    var _ = require("underscore");
-} else {
-    exports = this.Structured = {};
-    if (!this.esprima || !this._) {
+    if (typeof module !== "undefined" && module.exports) {
+        exports = module.exports = {};
+        esprima = require("esprima");
+        _ = require("underscore");
+    } else {
+        exports = this.Structured = {};
+        esprima = global.esprima;
+        _ = global._;
+    }
+
+    if (!esprima || !_) {
         throw "Error: Both Esprima and UnderscoreJS are required dependencies.";
     }
-}
 
-(function(exports) {
     /*
      * Returns true if the code (a string) matches the structure in rawStructure
      * Throws an exception if code is not parseable.
@@ -587,4 +592,4 @@ if (typeof module !== "undefined" && module.exports) {
 
     exports.match = match;
     exports.prettify = prettyHtml;
-})(exports);
+})(typeof window !== "undefined" ? window : global);
