@@ -11,6 +11,17 @@ var basicTests = function() {
 
     QUnit.module("Basic detection");
 
+    test("Accepts string for structure", function() {
+        ok(Structured.match("var draw = function() {}",
+           "function() { var draw = function() {};}"),
+           "Accepts string and matches");
+
+        equal(Structured.match("var drow = function() {}",
+           "function() { var draw = function() {};}"),
+           false,
+           "Accepts string and doesn't match it");
+    });
+
     test("Positive tests of syntax", function() {
 
         ok(Structured.match("",
