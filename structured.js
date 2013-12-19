@@ -11,6 +11,13 @@
     var esprima;
     var _;
 
+    // Cache all the structure tests
+    var structureCache = {};
+
+    // Cache the most recently-parsed code and tree
+    var cachedCode;
+    var cachedCodeTree;
+
     if (typeof module !== "undefined" && module.exports) {
         exports = module.exports = {};
         esprima = require("esprima");
@@ -70,8 +77,16 @@
         // Note: After the parse, structure contains object references into
         // wildcardVars[values] that must be maintained. So, beware of
         // JSON.parse(JSON.stringify), etc. as the tree is no longer static.
-        var structure = parseStructure(rawStructure, wildcardVars);
-        var codeTree = esprima.parse(code);
+        var structure = parseStructureWithVars(rawStructure, wildcardVars);
+
+        // Cache the parsed code tree, or pull from cache if it exists
+        var codeTree = (cachedCode === code ?
+            cachedCodeTree :
+            esprima.parse(code));
+
+        cachedCode = code;
+        cachedCodeTree = codeTree;
+
         foldConstants(codeTree);
         var toFind = structure.body;
         var peers = [];
@@ -235,6 +250,24 @@
         }
     }
 
+    function parseStructure(structure) {
+        if (structureCache[structure]) {
+            return JSON.parse(structureCache[structure]);
+        }
+
+        // Wrapped in parentheses so function() {} becomes valid Javascript.
+        var fullTree = esprima.parse("(" + structure + ")");
+
+        if (fullTree.body[0].expression.type !== "FunctionExpression" ||
+            !fullTree.body[0].expression.body) {
+            throw "Poorly formatted structure code";
+        }
+
+        var tree = fullTree.body[0].expression.body;
+        structureCache[structure] = JSON.stringify(tree);
+        return tree;
+    }
+
     /*
      * Returns a tree parsed out of the structure. The returned tree is an
      *    abstract syntax tree with wildcard properties set to undefined.
@@ -245,14 +278,8 @@
      *    and code can go before or after any statement (only the nesting and
      *        relative ordering matter).
      */
-    function parseStructure(structure, wVars) {
-        // Wrapped in parentheses so function() {} becomes valid Javascript.
-        var fullTree = esprima.parse("(" + structure + ")");
-        if (fullTree.body[0].expression.type !== "FunctionExpression" ||
-            !fullTree.body[0].expression.body) {
-            throw "Poorly formatted structure code";
-        }
-        var tree = fullTree.body[0].expression.body;
+    function parseStructureWithVars(structure, wVars) {
+        var tree = parseStructure(structure);
         foldConstants(tree);
         simplifyTree(tree, wVars);
         return tree;
