@@ -1,0 +1,28 @@
+{
+  "name": "structuredjs",
+  "version": "0.1.2",
+  "homepage": "https://github.com/Khan/structuredjs",
+  "authors": [
+    "John Resig <jeresig@gmail.com>"
+  ],
+  "description": "Simple interface for checking structure of JS code against a template, backed by Esprima.",
+  "main": "structured.js",
+  "moduleType": [
+    "globals"
+  ],
+  "keywords": [
+    "parsing",
+    "analysis",
+    "ast",
+    "checker",
+    "structure"
+  ],
+  "license": "BSD",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
