@@ -362,7 +362,7 @@ var combinedTests = function() {
            x += y;   \n \
         }   \n \
         ";
-        equal(Structured.match(code, structure),
+        equal(!!Structured.match(code, structure),
             true, "Simple mod, if, and += works");
     });
 };
@@ -395,7 +395,7 @@ var varCallbackTests = function() {
             }),
             false, "One always false varCallback of two causes failure.");
 
-        equal(Structured.match("var x = 10; var y = 20;",
+        equal(!!Structured.match("var x = 10; var y = 20;",
             function() {var _ = $a;}, {
                 "varCallbacks": {
                     "$a": function(obj) {
@@ -415,7 +415,7 @@ var varCallbackTests = function() {
             }),
             false, "Always true varCallback with no match does not match.");
 
-        equal(Structured.match("var x = 10; var y = 20; var z = 40;",
+        equal(!!Structured.match("var x = 10; var y = 20; var z = 40;",
             function() {var _ = $a;}, {
                 "varCallbacks": {
                     "$a": function(obj) {
@@ -425,7 +425,7 @@ var varCallbackTests = function() {
             }),
             true, "Basic single-matching var callback matches.");
 
-        equal(Structured.match("var x = 10; var y = 20; var z = 40;",
+        equal(!!Structured.match("var x = 10; var y = 20; var z = 40;",
             function() {var _ = $a; var _ = $b;}, {
                 "varCallbacks": {
                     "$a": function(obj) {
@@ -494,7 +494,7 @@ var varCallbackTests = function() {
         };
         var result = Structured.match("var x = 10; var y = 20; var c = 100;",
             function() {var $a = $b;}, {"varCallbacks": varCallbacks});
-        equal(result, true, "Matches still work around failure messages");
+        equal(!!result, true, "Matches still work around failure messages");
         equal(varCallbacks.failure, undefined,
             "Failure message is not set if no failure.");
     });
@@ -535,7 +535,7 @@ var varCallbackTests = function() {
                     obj.callee.name === "foo");
             }
         };
-        equal(Structured.match(code, structure, {varCallbacks: varCallbacks}),
+        equal(!!Structured.match(code, structure, {varCallbacks: varCallbacks}),
             true, "Complex with parameters, function names, etc works.");
     });
 
@@ -546,7 +546,7 @@ var varCallbackTests = function() {
                 return a.value > b.value;
             }
         };
-        result = Structured.match("var x = 50; var y = 20;",
+        result = !!Structured.match("var x = 50; var y = 20;",
             function() {var _ = $a; var _ = $b;},
             {"varCallbacks": varCallbacks});
         equal(result, true, "Simple multiple variable callback works.");
@@ -557,7 +557,7 @@ var varCallbackTests = function() {
                 return a.value > b.value;
             }
         };
-        result = Structured.match("var x = 50; var y = 20;",
+        result = !!Structured.match("var x = 50; var y = 20;",
             function() {var _ = $a; var _ = $b;},
             {"varCallbacks": varCallbacks});
         equal(result, true, "Simple multiple variable callback works.");
@@ -568,7 +568,7 @@ var varCallbackTests = function() {
                 return a.value > b.value && c.value !== 40;
             }
         };
-        equal(Structured.match("var a = 3; var b = 1; var c = 4;",
+        equal(!!Structured.match("var a = 3; var b = 1; var c = 4;",
             function() {var a = $a; var b = $b; var c = $c;}),
             true, "Trim from left works.");
 
@@ -592,7 +592,7 @@ var varCallbackTests = function() {
         code = "tree += 30 + 50 + 10; plant(40, 20); forest(30, 30);";
         result = Structured.match(code, structure,
             {"varCallbacks": varCallbacks});
-        equal(result, true, "Multiple multiple-var callbacks work.");
+        equal(!!result, true, "Multiple multiple-var callbacks work.");
 
         code = ("tree += 30 + 50 + 70; plant(40, 0) + forest(30, 30);" +
             "tree += 30 + 50 + 10; plant(40, 0) + forest(30, 60);");
@@ -625,7 +625,7 @@ var varCallbackTests = function() {
 
         result = Structured.match("var foo = 5; foo += 2; fill(100, 40, 2);",
             structure, {"varCallbacks": varCallbacks});
-        equal(result, true, "True RGB matching works.");
+        equal(!!result, true, "True RGB matching works.");
         equal(varCallbacks.failure, undefined, "True RGB message works");
     });
 };
@@ -680,7 +680,7 @@ var wildcardVarTests = function() {
             function() {var $a = _; var $b = _; $b = 3 + 2; $a += 2;}), false,
             "Basic multiple-option variable no-match works.");
 
-        equal(Structured.match("if(true) {var x = 2;} var y = 4; z = x + y",
+        equal(!!Structured.match("if(true) {var x = 2;} var y = 4; z = x + y",
             function() {if (_) {var $a = _;} var $b = 4; _ = $a + $b;}),
             true, "Simple multiple var match works");
 
@@ -690,7 +690,7 @@ var wildcardVarTests = function() {
             $k;
         };
         code = "function foo(bar) {} bar; foo;";
-        equal(Structured.match(code, structure),
+        equal(!!Structured.match(code, structure),
             true, "Matching declared function name works.");
     });
     test("Involved wildcard tests", function() {
@@ -708,7 +708,7 @@ var wildcardVarTests = function() {
         r = 1; s = 1; t = 1; u = 1; v = 1; w = 1; x = 1; y = 1; z = 1;   \n \
         u += 3;   \n \
         ";
-        equal(Structured.match(code, structure),
+        equal(!!Structured.match(code, structure),
             true, "More ambiguous multi-variable matching works.");
         code = " \n \
         var r, s, t, u, v, w, x, y, z;   \n \
@@ -741,7 +741,7 @@ var wildcardVarTests = function() {
             z = 'eagle'.length;   \n \
         }   \n \
         ";
-        equal(Structured.match(code, structure),
+        equal(!!Structured.match(code, structure),
             true, "Complex vars with parameters, function names, etc works.");
         code = " \n \
         var a = 10, b = 20, z = 3, y = 1;   \n \
@@ -784,6 +784,119 @@ var nestingOrder = function() {
         });
 };
 
+var structureMatchTests = function() {
+    QUnit.module("Structure Match Tests");
+
+    test("Match structure", function() {
+        deepEqual(Structured.match("if(true){var x = 5;}", function() {
+            var x = $a;
+        }), {
+            "_": [],
+            "vars": {
+                "a": {
+                    "type": "Literal",
+                    "value": 5
+                }
+            },
+            "root": {
+                "type": "VariableDeclaration",
+                "declarations": [
+                    {
+                        "type": "VariableDeclarator",
+                        "id": {
+                            "type": "Identifier",
+                            "name": "x"
+                        },
+                        "init": {
+                            "type": "Literal",
+                            "value": 5
+                        }
+                    }
+                ],
+                "kind": "var"
+            }
+        }, "Verify variable match inside if statement.");
+
+        deepEqual(Structured.match("test(); if(true){var x = 5;}", function() {
+            if(true) { var x = _; }
+        }), {
+            "_": [
+                {
+                    "type": "Literal",
+                    "value": 5
+                }
+            ],
+            "vars": {},
+            "root": {
+                "type": "IfStatement",
+                "test": {
+                    "type": "Literal",
+                    "value": true
+                },
+                "consequent": {
+                    "type": "BlockStatement",
+                    "body": [
+                        {
+                            "type": "VariableDeclaration",
+                            "declarations": [
+                                {
+                                    "type": "VariableDeclarator",
+                                    "id": {
+                                        "type": "Identifier",
+                                        "name": "x"
+                                    },
+                                    "init": {
+                                        "type": "Literal",
+                                        "value": 5
+                                    }
+                                }
+                            ],
+                            "kind": "var"
+                        }
+                    ]
+                },
+                "alternate": null
+            }
+        }, "Verify if statement match holding a placeholder assignment.");
+        
+        deepEqual(Structured.match("test(1,2,3);", function() {
+            _();
+        }), {
+            "_": [
+                {
+                    "type": "Identifier",
+                    "name": "test"
+                }
+            ],
+            "vars": {},
+            "root": {
+                "type": "ExpressionStatement",
+                "expression": {
+                    "type": "CallExpression",
+                    "callee": {
+                        "type": "Identifier",
+                        "name": "test"
+                    },
+                    "arguments": [
+                        {
+                            "type": "Literal",
+                            "value": 1
+                        },
+                        {
+                            "type": "Literal",
+                            "value": 2
+                        },
+                        {
+                            "type": "Literal",
+                            "value": 3
+                        }
+                    ]
+                }
+            }
+        }, "Verify function call matching.");
+    });
+};
+
 var runAll = function() {
     basicTests();
     clutterTests();
@@ -795,6 +908,7 @@ var runAll = function() {
     constantFolding();
     combinedTests();
     nestingOrder();
+    structureMatchTests();
 };
 
 runAll();
