@@ -82,7 +82,9 @@
         // Cache the parsed code tree, or pull from cache if it exists
         var codeTree = (cachedCode === code ?
             cachedCodeTree :
-            esprima.parse(code));
+            typeof code === "object" ?
+                code :
+                esprima.parse(code));
 
         cachedCode = code;
         cachedCodeTree = codeTree;

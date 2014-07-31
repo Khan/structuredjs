@@ -894,6 +894,51 @@ var structureMatchTests = function() {
                 }
             }
         }, "Verify function call matching.");
+
+        deepEqual(Structured.match({
+                "type": "VariableDeclaration",
+                "declarations": [
+                    {
+                        "type": "VariableDeclarator",
+                        "id": {
+                            "type": "Identifier",
+                            "name": "x"
+                        },
+                        "init": {
+                            "type": "Literal",
+                            "value": 5
+                        }
+                    }
+                ],
+                "kind": "var"
+        }, function() {
+            var x = $a;
+        }), {
+            "_": [],
+            "vars": {
+                "a": {
+                    "type": "Literal",
+                    "value": 5
+                }
+            },
+            "root": {
+                "type": "VariableDeclaration",
+                "declarations": [
+                    {
+                        "type": "VariableDeclarator",
+                        "id": {
+                            "type": "Identifier",
+                            "name": "x"
+                        },
+                        "init": {
+                            "type": "Literal",
+                            "value": 5
+                        }
+                    }
+                ],
+                "kind": "var"
+            }
+        }, "Verify match of existing AST.");
     });
 };
 
