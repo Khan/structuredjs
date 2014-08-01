@@ -2,7 +2,7 @@
 
 // Detect if run in-browser or via node.
 if (typeof global !== "undefined") {
-    Structured = global["structured"];
+    Structured = global.structured;
 } else {
     Structured = this.Structured;
 }
@@ -858,7 +858,7 @@ var structureMatchTests = function() {
                 "alternate": null
             }
         }, "Verify if statement match holding a placeholder assignment.");
-        
+
         deepEqual(Structured.match("test(1,2,3);", function() {
             _();
         }), {
@@ -939,6 +939,251 @@ var structureMatchTests = function() {
                 "kind": "var"
             }
         }, "Verify match of existing AST.");
+
+        deepEqual(Structured.match(
+            "if(true){var a = 5; test();}",
+            function() {
+                if ($condition) {
+                    glob$expressions;
+                }
+            }), {
+                "_": [],
+                "vars": {
+                    "condition": {
+                        "type": "Literal",
+                        "value": true
+                    },
+                    "expressions": [
+                        {
+                            "type": "VariableDeclaration",
+                            "declarations": [
+                                {
+                                    "type": "VariableDeclarator",
+                                    "id": {
+                                        "type": "Identifier",
+                                        "name": "a"
+                                    },
+                                    "init": {
+                                        "type": "Literal",
+                                        "value": 5
+                                    }
+                                }
+                            ],
+                            "kind": "var"
+                        },
+                        {
+                            "type": "ExpressionStatement",
+                            "expression": {
+                                "type": "CallExpression",
+                                "callee": {
+                                    "type": "Identifier",
+                                    "name": "test"
+                                },
+                                "arguments": []
+                            }
+                        }
+                    ]
+                },
+                "root": {
+                    "type": "IfStatement",
+                    "test": {
+                        "type": "Literal",
+                        "value": true
+                    },
+                    "consequent": {
+                        "type": "BlockStatement",
+                        "body": [
+                            {
+                                "type": "VariableDeclaration",
+                                "declarations": [
+                                    {
+                                        "type": "VariableDeclarator",
+                                        "id": {
+                                            "type": "Identifier",
+                                            "name": "a"
+                                        },
+                                        "init": {
+                                            "type": "Literal",
+                                            "value": 5
+                                        }
+                                    }
+                                ],
+                                "kind": "var"
+                            },
+                            {
+                                "type": "ExpressionStatement",
+                                "expression": {
+                                    "type": "CallExpression",
+                                    "callee": {
+                                        "type": "Identifier",
+                                        "name": "test"
+                                    },
+                                    "arguments": []
+                                }
+                            }
+                        ]
+                    },
+                    "alternate": null
+                }
+            },
+            "Test glob expressions."
+        );
+
+        deepEqual(Structured.match(
+            "if(true){}",
+            function() {
+                if ($condition) {
+                    glob$expressions;
+                }
+            }), {
+                "_": [],
+                "vars": {
+                    "condition": {
+                        "type": "Literal",
+                        "value": true
+                    },
+                    "expressions": []
+                },
+                "root": {
+                    "type": "IfStatement",
+                    "test": {
+                        "type": "Literal",
+                        "value": true
+                    },
+                    "consequent": {
+                        "type": "BlockStatement",
+                        "body": []
+                    },
+                    "alternate": null
+                }
+            },
+            "Test empty glob expressions."
+        );
+
+        deepEqual(Structured.match("rect(10,20,200,200,300,400);",
+            function() {
+                rect(_,_,_,_,glob_);
+            }), {
+            "_": [
+                {
+                    "type": "Literal",
+                    "value": 10
+                },
+                {
+                    "type": "Literal",
+                    "value": 20
+                },
+                {
+                    "type": "Literal",
+                    "value": 200
+                },
+                {
+                    "type": "Literal",
+                    "value": 200
+                },
+                [
+                    {
+                        "type": "Literal",
+                        "value": 300
+                    },
+                    {
+                        "type": "Literal",
+                        "value": 400
+                    }
+                ]
+            ],
+            "vars": {},
+            "root": {
+                "type": "ExpressionStatement",
+                "expression": {
+                    "type": "CallExpression",
+                    "callee": {
+                        "type": "Identifier",
+                        "name": "rect"
+                    },
+                    "arguments": [
+                        {
+                            "type": "Literal",
+                            "value": 10
+                        },
+                        {
+                            "type": "Literal",
+                            "value": 20
+                        },
+                        {
+                            "type": "Literal",
+                            "value": 200
+                        },
+                        {
+                            "type": "Literal",
+                            "value": 200
+                        },
+                        {
+                            "type": "Literal",
+                            "value": 300
+                        },
+                        {
+                            "type": "Literal",
+                            "value": 400
+                        }
+                    ]
+                }
+            }
+        }, "Glob additional arguments");
+
+        deepEqual(Structured.match("rect(10,20,200,200);",
+            function() {
+                rect(_,_,_,_,glob_);
+            }), {
+            "_": [
+                {
+                    "type": "Literal",
+                    "value": 10
+                },
+                {
+                    "type": "Literal",
+                    "value": 20
+                },
+                {
+                    "type": "Literal",
+                    "value": 200
+                },
+                {
+                    "type": "Literal",
+                    "value": 200
+                },
+                []
+            ],
+            "vars": {},
+            "root": {
+                "type": "ExpressionStatement",
+                "expression": {
+                    "type": "CallExpression",
+                    "callee": {
+                        "type": "Identifier",
+                        "name": "rect"
+                    },
+                    "arguments": [
+                        {
+                            "type": "Literal",
+                            "value": 10
+                        },
+                        {
+                            "type": "Literal",
+                            "value": 20
+                        },
+                        {
+                            "type": "Literal",
+                            "value": 200
+                        },
+                        {
+                            "type": "Literal",
+                            "value": 200
+                        }
+                    ]
+                }
+            }
+        }, "Glob additional arguments, empty");
     });
 };
 

@@ -297,7 +297,7 @@
             if (!tree.hasOwnProperty(key)) {
                 continue;  // Inherited property
             }
-            
+
             var ast = tree[key];
             if (_.isObject(ast)) {
                 foldConstants(ast);
@@ -391,6 +391,16 @@
     }
 
     /*
+     *
+     */
+    function isGlob(node) {
+        return node && node.name &&
+            ((node.name === "glob_" && "_") ||
+            (node.name.indexOf("glob$") === 0 && node.name.slice(5))) ||
+            node && node.expression && isGlob(node.expression);
+    }
+
+    /*
      * Returns true if currTree matches the wildcard structure toFind.
      *
      * currTree: The syntax node tracking our current place in the user's code.
@@ -431,10 +441,24 @@
     function checkNodeArray(nodeArr, toFind, peersToFind, wVars, matchResults) {
         matchResults = matchResults || {_: [], vars: {}};
 
+        var curGlob;
+
         for (var i = 0; i < nodeArr.length; i += 1) {
-            if (checkMatchTree(nodeArr[i], toFind, peersToFind, wVars, matchResults)) {
+            if (isGlob(toFind)) {
+                if (!curGlob) {
+                    curGlob = [];
+                    var globName = isGlob(toFind);
+                    if (globName === "_") {
+                        matchResults._.push(curGlob);
+                    } else {
+                        matchResults.vars[globName] = curGlob;
+                    }
+                }
+                curGlob.push(nodeArr[i]);
+            } else if (checkMatchTree(nodeArr[i], toFind, peersToFind, wVars, matchResults)) {
                 if (!peersToFind || peersToFind.length === 0) {
-                    return matchResults; // Found everything needed on this level.
+                    return matchResults;
+                    // Found everything needed on this level.
                 } else {
                     // We matched this node, but we still have more nodes on
                     // this level we need to match on subsequent iterations
@@ -442,6 +466,19 @@
                 }
             }
         }
+
+        if (curGlob) {
+            return matchResults;
+        } else if (isGlob(toFind)) {
+            var globName = isGlob(toFind);
+            if (globName === "_") {
+                matchResults._.push([]);
+            } else {
+                matchResults.vars[globName] = [];
+            }
+            return matchResults;
+        }
+
         return false;
     }
 
