@@ -134,8 +134,8 @@
          *         (used during the match algorithm)
          *     .order[i] is the name of the ith occurring variable.
          */
-        function anyPossible(i, wVars, varCallbacks) {
-            var matchResults = matchResults || {_: [], vars: {}};
+        function anyPossible(i, wVars, varCallbacks, matchResults) {
+            matchResults = matchResults || {_: [], vars: {}};
 
             var order = wVars.order;  // Just for ease-of-notation.
             wVars.skipData[order[i]] = 0;

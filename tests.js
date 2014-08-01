@@ -1184,6 +1184,59 @@ var structureMatchTests = function() {
                 }
             }
         }, "Glob additional arguments, empty");
+
+        deepEqual(Structured.match("rect(10,20,200,200);",
+            function() {
+                rect($x,$y,$w,$h);
+            }), {
+            "_": [],
+            "vars": {
+                "x": {
+                    "type": "Literal",
+                    "value": 10
+                },
+                "y": {
+                    "type": "Literal",
+                    "value": 20
+                },
+                "w": {
+                    "type": "Literal",
+                    "value": 200
+                },
+                "h": {
+                    "type": "Literal",
+                    "value": 200
+                }
+            },
+            "root": {
+                "type": "ExpressionStatement",
+                "expression": {
+                    "type": "CallExpression",
+                    "callee": {
+                        "type": "Identifier",
+                        "name": "rect"
+                    },
+                    "arguments": [
+                        {
+                            "type": "Literal",
+                            "value": 10
+                        },
+                        {
+                            "type": "Literal",
+                            "value": 20
+                        },
+                        {
+                            "type": "Literal",
+                            "value": 200
+                        },
+                        {
+                            "type": "Literal",
+                            "value": 200
+                        }
+                    ]
+                }
+            }
+        });
     });
 };
 
