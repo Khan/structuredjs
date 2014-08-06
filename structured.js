@@ -90,7 +90,7 @@
         cachedCodeTree = codeTree;
 
         foldConstants(codeTree);
-        var toFind = structure.body;
+        var toFind = structure.body || structure;
         var peers = [];
         if (_.isArray(structure.body)) {
             toFind = structure.body[0];
@@ -256,9 +256,6 @@
 
     function parseStructure(structure) {
         if (typeof structure === "object") {
-            if (!structure.body) {
-                structure = {body: [structure]};
-            }
             return deepClone(structure);
         }
 
