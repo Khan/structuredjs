@@ -83,7 +83,7 @@
         var codeTree = (cachedCode === code ?
             cachedCodeTree :
             typeof code === "object" ?
-                code :
+                deepClone(code) :
                 esprima.parse(code));
 
         cachedCode = code;
@@ -229,7 +229,7 @@
                 }
                 // Convert each var name to the Esprima structure it has
                 // been assigned in the parse. Make a deep copy.
-                return JSON.parse(JSON.stringify(wVars.values[varName]));
+                return deepClone(wVars.values[varName]);
             });
             // Call the user-defined callback, passing in the var values as
             // parameters in the order that the vars were defined in the
@@ -255,6 +255,13 @@
     }
 
     function parseStructure(structure) {
+        if (typeof structure === "object") {
+            if (!structure.body) {
+                structure = {body: [structure]};
+            }
+            return deepClone(structure);
+        }
+
         if (structureCache[structure]) {
             return JSON.parse(structureCache[structure]);
         }
@@ -584,6 +591,9 @@
         return matchResults;
     }
 
+    function deepClone(obj) {
+        return JSON.parse(JSON.stringify(obj));
+    }
 
     /*
      * Takes in a string for a structure and returns HTML for nice styling.

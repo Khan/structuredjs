@@ -817,8 +817,56 @@ var structureMatchTests = function() {
             }
         }, "Verify variable match inside if statement.");
 
-        deepEqual(Structured.match("test(); if(true){var x = 5;}", function() {
-            if(true) { var x = _; }
+        deepEqual(Structured.match("if(true){var x = 5;}", function() {
+            var x = $a;
+        }), {
+            "_": [],
+            "vars": {
+                "a": {
+                    "type": "Literal",
+                    "value": 5
+                }
+            },
+            "root": {
+                "type": "VariableDeclaration",
+                "declarations": [
+                    {
+                        "type": "VariableDeclarator",
+                        "id": {
+                            "type": "Identifier",
+                            "name": "x"
+                        },
+                        "init": {
+                            "type": "Literal",
+                            "value": 5
+                        }
+                    }
+                ],
+                "kind": "var"
+            }
+        }, "Verify variable match inside if statement.");
+
+        deepEqual(Structured.match("test(); if(true){var x = 5;}", {
+            "type": "Program",
+            "body": [
+                {
+                    "type": "VariableDeclaration",
+                    "declarations": [
+                        {
+                            "type": "VariableDeclarator",
+                            "id": {
+                                "type": "Identifier",
+                                "name": "x"
+                            },
+                            "init": {
+                                "type": "Identifier",
+                                "name": "_"
+                            }
+                        }
+                    ],
+                    "kind": "var"
+                }
+            ]
         }), {
             "_": [
                 {
@@ -828,36 +876,54 @@ var structureMatchTests = function() {
             ],
             "vars": {},
             "root": {
-                "type": "IfStatement",
-                "test": {
-                    "type": "Literal",
-                    "value": true
-                },
-                "consequent": {
-                    "type": "BlockStatement",
-                    "body": [
-                        {
-                            "type": "VariableDeclaration",
-                            "declarations": [
-                                {
-                                    "type": "VariableDeclarator",
-                                    "id": {
-                                        "type": "Identifier",
-                                        "name": "x"
-                                    },
-                                    "init": {
-                                        "type": "Literal",
-                                        "value": 5
-                                    }
-                                }
-                            ],
-                            "kind": "var"
+                "type": "VariableDeclaration",
+                "declarations": [
+                    {
+                        "type": "VariableDeclarator",
+                        "id": {
+                            "type": "Identifier",
+                            "name": "x"
+                        },
+                        "init": {
+                            "type": "Literal",
+                            "value": 5
                         }
-                    ]
-                },
-                "alternate": null
+                    }
+                ],
+                "kind": "var"
             }
-        }, "Verify if statement match holding a placeholder assignment.");
+        }, "Verify variable declaration with object AST.");
+
+        deepEqual(Structured.match("test(); if(true){var x = 5;}", {
+            "type": "VariableDeclarator",
+            "id": {
+                "type": "Identifier",
+                "name": "x"
+            },
+            "init": {
+                "type": "Identifier",
+                "name": "_"
+            }
+        }), {
+            "_": [
+                {
+                    "type": "Literal",
+                    "value": 5
+                }
+            ],
+            "vars": {},
+            "root": {
+                "type": "VariableDeclarator",
+                "id": {
+                    "type": "Identifier",
+                    "name": "x"
+                },
+                "init": {
+                    "type": "Literal",
+                    "value": 5
+                }
+            }
+        }, "Verify primitive with simple object AST.");
 
         deepEqual(Structured.match("test(1,2,3);", function() {
             _();
