@@ -962,21 +962,21 @@ var structureMatchTests = function() {
         }, "Verify function call matching.");
 
         deepEqual(Structured.match({
-                "type": "VariableDeclaration",
-                "declarations": [
-                    {
-                        "type": "VariableDeclarator",
-                        "id": {
-                            "type": "Identifier",
-                            "name": "x"
-                        },
-                        "init": {
-                            "type": "Literal",
-                            "value": 5
-                        }
+            "type": "VariableDeclaration",
+            "declarations": [
+                {
+                    "type": "VariableDeclarator",
+                    "id": {
+                        "type": "Identifier",
+                        "name": "x"
+                    },
+                    "init": {
+                        "type": "Literal",
+                        "value": 5
                     }
-                ],
-                "kind": "var"
+                }
+            ],
+            "kind": "var"
         }, function() {
             var x = $a;
         }), {
@@ -1303,6 +1303,70 @@ var structureMatchTests = function() {
                 }
             }
         });
+
+        var ifBlock = {
+            "type": "IfStatement",
+            "test": {
+                "type": "Literal",
+                "value": true
+            },
+            "consequent": {
+                "type": "BlockStatement",
+                "body": [
+                    {
+                        "type": "VariableDeclaration",
+                        "declarations": [
+                            {
+                                "type": "VariableDeclarator",
+                                "id": {
+                                    "type": "Identifier",
+                                    "name": "a"
+                                },
+                                "init": {
+                                    "type": "Literal",
+                                    "value": 5
+                                }
+                            }
+                        ],
+                        "kind": "var"
+                    },
+                    {
+                        "type": "ExpressionStatement",
+                        "expression": {
+                            "type": "CallExpression",
+                            "callee": {
+                                "type": "Identifier",
+                                "name": "test"
+                            },
+                            "arguments": []
+                        }
+                    }
+                ]
+            },
+            "alternate": null
+        };
+
+        deepEqual(Structured.matchNode(ifBlock, {
+            "type": "IfStatement",
+            "test": {
+                "type": "Literal",
+                "value": true
+            },
+            "consequent": {
+                "type": "BlockStatement",
+                "body": []
+            },
+            "alternate": null
+        }), {
+            "_": [],
+            "vars": {},
+            "root": ifBlock
+        }, "Verify exact node match.");
+
+        deepEqual(Structured.matchNode(ifBlock, {
+            "type": "Literal",
+            "value": true
+        }), false, "Verify in-exact node match fails.");
     });
 };
 
