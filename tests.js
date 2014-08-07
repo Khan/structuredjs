@@ -1363,6 +1363,59 @@ var structureMatchTests = function() {
             "root": ifBlock
         }, "Verify exact node match.");
 
+        deepEqual(Structured.matchNode(ifBlock, function() {
+            if (true) {}
+        }), {
+            "_": [],
+            "vars": {},
+            "root": ifBlock
+        }, "Verify exact node match.");
+
+        deepEqual(Structured.matchNode(ifBlock, function() {
+            if (true) {
+                glob$statements;
+            }
+        }), {
+            "_": [],
+            "vars": {
+                "statements": [
+                    {
+                        "type": "VariableDeclaration",
+                        "declarations": [
+                            {
+                                "type": "VariableDeclarator",
+                                "id": {
+                                    "type": "Identifier",
+                                    "name": "a"
+                                },
+                                "init": {
+                                    "type": "Literal",
+                                    "value": 5
+                                }
+                            }
+                        ],
+                        "kind": "var"
+                    },
+                    {
+                        "type": "ExpressionStatement",
+                        "expression": {
+                            "type": "CallExpression",
+                            "callee": {
+                                "type": "Identifier",
+                                "name": "test"
+                            },
+                            "arguments": []
+                        }
+                    }
+                ]
+            },
+            "root": ifBlock
+        }, "Verify exact node match.");
+
+        deepEqual(Structured.matchNode(ifBlock, function() {
+            test();
+        }), false, "Verify in-exact node match fails.");
+
         deepEqual(Structured.matchNode(ifBlock, {
             "type": "Literal",
             "value": true
