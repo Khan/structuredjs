@@ -687,11 +687,98 @@
     addStyling.styleMap = {};
     addStyling.counter = 0;
 
+    function getSingleData(node, data) {
+        if (!node || node.type !== "Identifier") {
+            return;
+        }
+
+        if (node.name === "_") {
+            if (!data._ || data._.length === 0) {
+                throw "No _ data available.";
+            }
+
+            return data._.shift();
+        } else if (node.name && node.name.indexOf("$") === 0) {
+            var name = node.name.slice(1);
+
+            if (!data.vars || !(name in data.vars)) {
+                throw "No vars available.";
+            }
+
+            return data.vars[name];
+        }
+    }
+
+    function getGlobData(node, data) {
+        var check = node && node.expression || node;
+
+        if (!check || check.type !== "Identifier") {
+            return;
+        }
+
+        if (check.name === "glob_") {
+            if (!data._ || data._.length === 0) {
+                throw "No _ data available.";
+            }
+
+            return data._.shift();
+        } else if (check.name && check.name.indexOf("glob$") === 0) {
+            var name = check.name.slice(5);
+
+            if (!data.vars || !(name in data.vars)) {
+                throw "No vars available.";
+            }
+
+            return data.vars[name];
+        }
+    }
+
+    function injectData(node, data) {
+        if (!node) {
+            return node;
+        }
+
+        for (var prop in node) {
+            if (!node.hasOwnProperty(prop)) {
+                continue;
+            }
+
+            if (node[prop] && typeof node[prop] === "object" && node[prop].length) {
+                for (var i = 0; i < node[prop].length; i++) {
+                    var globData = getGlobData(node[prop][i], data);
+
+                    if (globData) {
+                        node[prop].splice.apply(node[prop],
+                            [i, 1].concat(globData));
+                        break;
+                    } else if (typeof node[prop][i] === "object") {
+                        injectData(node[prop][i], data);
+                    }
+                }
+            } else {
+                var singleData = getSingleData(node[prop], data);
+
+                if (singleData) {
+                    node[prop] = singleData;
+                } else if (typeof node[prop] === "object") {
+                    injectData(node[prop], data);
+                }
+            }
+        }
+
+        return node;
+    }
+
     exports.match = match;
     exports.matchNode = function(code, rawStructure, options) {
         options = options || {};
         options.single = true;
         return match(code, rawStructure, options);
+    };
+    exports.injectData = function(node, data) {
+        node = parseStructure(node);
+        data = deepClone(data);
+        return injectData(node, data);
     };
     exports.prettify = prettyHtml;
 })(typeof window !== "undefined" ? window : global);
