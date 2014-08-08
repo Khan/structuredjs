@@ -1423,6 +1423,66 @@ var structureMatchTests = function() {
     });
 };
 
+var injectDataTests = function() {
+    QUnit.module("Injecting Data");
+
+    test("Injecting data", function() {
+        deepEqual(Structured.injectData(function() {
+            if ($condition) {
+                glob$expressions;
+            }
+        }, {
+            vars: {
+                condition: {
+                    "type": "Literal",
+                    "value": true
+                },
+                expressions: [
+                    {
+                        "type": "ExpressionStatement",
+                        "expression": {
+                            "type": "CallExpression",
+                            "callee": {
+                                "type": "Identifier",
+                                "name": "test"
+                            },
+                            "arguments": []
+                        }
+                    }
+                ]
+            }
+        }), {
+            "type": "BlockStatement",
+            "body": [
+                {
+                    "type": "IfStatement",
+                    "test": {
+                        "type": "Literal",
+                        "value": true
+                    },
+                    "consequent": {
+                        "type": "BlockStatement",
+                        "body": [
+                            {
+                                "type": "ExpressionStatement",
+                                "expression": {
+                                    "type": "CallExpression",
+                                    "callee": {
+                                        "type": "Identifier",
+                                        "name": "test"
+                                    },
+                                    "arguments": []
+                                }
+                            }
+                        ]
+                    },
+                    "alternate": null
+                }
+            ]
+        }, "Inject a regular and glob variable.");
+    });
+};
+
 var runAll = function() {
     basicTests();
     clutterTests();
@@ -1435,6 +1495,7 @@ var runAll = function() {
     combinedTests();
     nestingOrder();
     structureMatchTests();
+    injectDataTests();
 };
 
 runAll();
