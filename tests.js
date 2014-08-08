@@ -1480,6 +1480,94 @@ var injectDataTests = function() {
                 }
             ]
         }, "Inject a regular and glob variable.");
+
+        deepEqual(Structured.injectData(function() {
+            if ($condition) {
+                oldTest();
+                glob$expressions;
+            }
+        }, {
+            vars: {
+                condition: {
+                    "type": "Literal",
+                    "value": true
+                },
+                expressions: [
+                    {
+                        "type": "ExpressionStatement",
+                        "expression": {
+                            "type": "CallExpression",
+                            "callee": {
+                                "type": "Identifier",
+                                "name": "test1"
+                            },
+                            "arguments": []
+                        }
+                    },
+                    {
+                        "type": "ExpressionStatement",
+                        "expression": {
+                            "type": "CallExpression",
+                            "callee": {
+                                "type": "Identifier",
+                                "name": "test2"
+                            },
+                            "arguments": []
+                        }
+                    }
+                ]
+            }
+        }), {
+            "type": "BlockStatement",
+            "body": [
+                {
+                    "type": "IfStatement",
+                    "test": {
+                        "type": "Literal",
+                        "value": true
+                    },
+                    "consequent": {
+                        "type": "BlockStatement",
+                        "body": [
+                            {
+                                "type": "ExpressionStatement",
+                                "expression": {
+                                    "type": "CallExpression",
+                                    "callee": {
+                                        "type": "Identifier",
+                                        "name": "oldTest"
+                                    },
+                                    "arguments": []
+                                }
+                            },
+                            {
+                                "type": "ExpressionStatement",
+                                "expression": {
+                                    "type": "CallExpression",
+                                    "callee": {
+                                        "type": "Identifier",
+                                        "name": "test1"
+                                    },
+                                    "arguments": []
+                                }
+                            },
+                            {
+                                "type": "ExpressionStatement",
+                                "expression": {
+                                    "type": "CallExpression",
+                                    "callee": {
+                                        "type": "Identifier",
+                                        "name": "test2"
+                                    },
+                                    "arguments": []
+                                }
+                            }
+                        ]
+                    },
+                    "alternate": null
+                }
+            ]
+        }, "Test inserting multiple glob after.");
     });
 };
 
