@@ -1304,6 +1304,58 @@ var structureMatchTests = function() {
             }
         });
 
+        deepEqual(Structured.match("var a = function(){};",
+            function() {
+                var _ = _;
+            }), {
+                "_": [
+                    {
+                        "type": "Identifier",
+                        "name": "a"
+                    },
+                    {
+                        "type": "FunctionExpression",
+                        "id": null,
+                        "params": [],
+                        "defaults": [],
+                        "body": {
+                            "type": "BlockStatement",
+                            "body": []
+                        },
+                        "rest": null,
+                        "generator": false,
+                        "expression": false
+                    }
+                ],
+                "vars": {},
+                "root": {
+                    "type": "VariableDeclaration",
+                    "declarations": [
+                        {
+                            "type": "VariableDeclarator",
+                            "id": {
+                                "type": "Identifier",
+                                "name": "a"
+                            },
+                            "init": {
+                                "type": "FunctionExpression",
+                                "id": null,
+                                "params": [],
+                                "defaults": [],
+                                "body": {
+                                    "type": "BlockStatement",
+                                    "body": []
+                                },
+                                "rest": null,
+                                "generator": false,
+                                "expression": false
+                            }
+                        }
+                    ],
+                    "kind": "var"
+                }
+            });
+
         var ifBlock = {
             "type": "IfStatement",
             "test": {

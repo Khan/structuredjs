@@ -383,8 +383,7 @@
      * can be filled in by anything in others' code.
      */
     function isWildcard(node) {
-        return (node.name && node.name === "_") ||
-                (_.isArray(node.body) && node.body.length === 0);
+        return node.name && node.name === "_";
     }
 
     /* Returns whether the structure node is intended as a wildcard variable. */
@@ -518,9 +517,7 @@
                 if (subCurr === null || subCurr === undefined) {
                     return false;
                 } else {
-                    if (!subCurr.body) {
-                        matchResults._.push(subCurr);
-                    }
+                    matchResults._.push(subCurr);
                     continue;
                 }
             }
