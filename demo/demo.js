@@ -22,7 +22,7 @@ $(document).ready(function() {
         eval("var varCallbacks = " + editorCallbacks.getValue());
         var message, errorMessage;
         try {
-            var result = Structured.match(code, structure,
+            var result = !!Structured.match(code, structure,
                 {varCallbacks: varCallbacks});
             message = "Match: " + result;
             errorMessage = varCallbacks.failure || "";
