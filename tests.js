@@ -1745,6 +1745,64 @@ var injectDataTests = function() {
     });
 };
 
+var altVarCallbacks = function(){
+    QUnit.module("Better varCallbacks Formats");
+
+    test("--", function() {
+        ok(Structured.match("var a = 1", "function(){ var $v = 1; }", {varCallbacks: function ($v) {
+            return $v.name === "a"; 
+        }}), "Single function")
+
+        ok(!Structured.match("var a = 1", "function(){ var $v = 1; }", {varCallbacks: function ($v) {
+            return $v.name === "ab"; 
+        }}), "Single function failure.")
+
+        ok(Structured.match("var a = 2", "function(){ var _ = $x; }", {varCallbacks: [function ($x) {
+            return $x.value === 2; 
+        }]}), "List of functions")
+
+        ok(!Structured.match("var a = 2", "function(){ var _ = $x; }", {varCallbacks: [function ($x) {
+            console.log("YO");
+            return $x.value === 3; 
+        }]}), "List of functions failure")
+
+        ok(Structured.match("size()", "function(){ $f() }", {varCallbacks: {
+            variables: ["$f"],
+            fn: function (func) {
+                return func.name === "size"; 
+            }
+        }}), "Single constraint")
+
+        ok(!Structured.match("size()", "function(){ $f() }", {varCallbacks: {
+            variables: ["$f"],
+            fn: function (func) {
+                return func.name === "sizzle"; 
+            }
+        }}), "Single constraint failure")
+
+        ok(Structured.match("a = b + 10", "function(){ a = $fun + $add }", {varCallbacks: [{
+            variables: ["$fun"],
+            fn: function (variable) {
+                return variable.name === "b"; 
+            }
+        },{
+            variables: ["$add"],
+            fn: function (num) {
+                return num.value > 5; 
+            }
+        }]}), "List of Constraints")
+
+        ok(Structured.match("a = b + 10", "function(){ a = $fun + $add }", {varCallbacks: [function($fun){
+            return $fun.name == "b";
+        },{
+            variables: ["$add"],
+            fn: function (num) {
+                return num.value > 5; 
+            }
+        }]}), "List of Constraints")
+    });
+};
+
 var runAll = function() {
     basicTests();
     clutterTests();
@@ -1758,6 +1816,7 @@ var runAll = function() {
     nestingOrder();
     structureMatchTests();
     injectDataTests();
+    altVarCallbacks();
 };
 
 runAll();

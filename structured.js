@@ -44,8 +44,8 @@
         var params = paramText.match(/[$_a-zA-z0-9]+/g);
 
         for (key in params) { 
-            if(params[key][0] === "$") {
-                console.warn("Invalid parameter in constraint (should begin with a '$''): ", paramName);
+            if(params[key][0] !== "$") {
+                console.warn("Invalid parameter in constraint (should begin with a '$): ", params[key]);
                 return null;
             }
         }
@@ -128,6 +128,7 @@
             }
             varCallbacks = realCallbacks;
         }
+        console.log(varCallbacks);
         var wildcardVars = {order: [], skipData: {}, values: {}};
         // Note: After the parse, structure contains object references into
         // wildcardVars[values] that must be maintained. So, beware of
@@ -288,12 +289,7 @@
             // Call the user-defined callback, passing in the var values as
             // parameters in the order that the vars were defined in the
             // property string.
-            console.log(varCallbacks[key]);
-            if(!(varCallbacks[key].fn instanceof Function)) {
-                window.FUCK = varCallbacks[key];
-            }
             var result = varCallbacks[key].fn.apply(null, varValues);
-            console.log(result);
             if (!result || _.has(result, "failure")) {
                 // Set the failure message if the user callback provides one.
                 if (_.has(result, "failure")) {
