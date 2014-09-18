@@ -13,138 +13,192 @@ var basicTests = function() {
 
     test("Accepts string for structure", function() {
         ok(Structured.match("var draw = function() {}",
-           "function() { var draw = function() {};}"),
-           "Accepts string and matches");
+                "function() { var draw = function() {};}"),
+            "Accepts string and matches");
 
         equal(Structured.match("var drow = function() {}",
-           "function() { var draw = function() {};}"),
-           false,
-           "Accepts string and doesn't match it");
+                "function() { var draw = function() {};}"),
+            false,
+            "Accepts string and doesn't match it");
     });
 
     test("Positive tests of syntax", function() {
 
         ok(Structured.match("",
-            function() {}),
+                function() {}),
             "Empty structure matches empty string.");
 
         ok(Structured.match("if (y > 30 && x > 13) {x += y;}",
-            function() { if (_) {} }),
+                function() {
+                    if (_) {}
+                }),
             "Basic if-statement structure matches.");
 
         ok(Structured.match("if (y > 30 && x > 13) {x += y;}",
-            function foo() { if (_) {} }),
+                function foo() {
+                    if (_) {}
+                }),
             "Using a named function is allowable as well.");
 
         ok(Structured.match("if (y > 30 && x > 13) {x += y;} else { y += 2;}",
-            function() { if (_) {} else {}}),
+                function() {
+                    if (_) {} else {}
+                }),
             "Basic if-else statement structure matches.");
 
         ok(Structured.match("if (y > 30 && x > 13) {x += y;} \
             else if(x <10) {y -= 20;} else { y += 2;}",
-            function() { if (_) {} else if (_) {} else {}}),
+                function() {
+                    if (_) {} else if (_) {} else {}
+                }),
             "Basic if, else-if, else statement structure matches.");
 
         ok(Structured.match("for (var a = 0; a < 10; a += 1) { a -= 2;}",
-            function() { for (_; _; _) {} }),
+                function() {
+                    for (_; _; _) {}
+                }),
             "Basic for-statement structure matches.");
 
         ok(Structured.match("var a = 30;",
-            function() { var _ = _; }),
+                function() {
+                    var _ = _;
+                }),
             "Basic variable declaration + initialization matches.");
 
         ok(Structured.match("var test = function() {return 3+2;}",
-            function() { var _ = function() {};}),
+                function() {
+                    var _ = function() {};
+                }),
             "Basic function assignment into var matches.");
 
         ok(Structured.match("function foo() {return x+2;}",
-            function() { function _() {}}),
+                function() {
+                    function _() {}
+                }),
             "Basic standalone function declaration matches.");
 
         ok(Structured.match("rect();",
-            function() { rect(); }),
+                function() {
+                    rect();
+                }),
             "No-parameter call to function matches.");
 
         ok(Structured.match("rect(3);",
-            function() { rect(); }),
+                function() {
+                    rect();
+                }),
             "Parameterized call to no-param function structure matches.");
 
         ok(Structured.match("rect(30, 40, 10, 11);",
-            function() { rect(30, 40, 10, 11); }),
+                function() {
+                    rect(30, 40, 10, 11);
+                }),
             "Fully specified parameter call to function matches.");
 
         ok(Structured.match("rect(30, 40, 10, 11);",
-            function() { rect(30, _, _, 11); }),
+                function() {
+                    rect(30, _, _, 11);
+                }),
             "Parameters with wildcards call to function matches.");
 
         ok(Structured.match("rect(30, 40);",
-            function() { rect(_, _); }),
+                function() {
+                    rect(_, _);
+                }),
             "Parameters with all wildcards call to function matches.");
 
         ok(Structured.match("rect(30, 40, 30);",
-            function() { rect(_, _); }),
+                function() {
+                    rect(_, _);
+                }),
             "Extra params to function matches.");
     });
 
     test("Negative tests of syntax", function() {
 
         equal(Structured.match("if (y > 30 && x > 13) {x += y;}",
-            function() { if (_) {_;} else {}}),
+                function() {
+                    if (_) {
+                        _;
+                    } else {}
+                }),
             false,
             "If-else does not match only an if.");
 
         equal(Structured.match("if(y > 30 && x > 13) {x += y;} else {y += 2;}",
-            function() { if (_) {} else if (_) {} else {}}),
+                function() {
+                    if (_) {} else if (_) {} else {}
+                }),
             false,
             "If, else if, else structure does not match only if else.");
 
         equal(Structured.match("var a;",
-            function() { var _ = _; }),
+                function() {
+                    var _ = _;
+                }),
             false,
             "Variable declaration + init does not match just declaration.");
 
         equal(Structured.match("while(true) { a -= 2;}",
-            function() { for (_; _; _) {} }),
+                function() {
+                    for (_; _; _) {}
+                }),
             false,
             "For-statement does not match a while loop.");
 
         equal(Structured.match("var test = 3+5",
-            function() { var _ = function() {};}),
+                function() {
+                    var _ = function() {};
+                }),
             false,
             "Basic function declaration does not match basic var declaration");
 
         equal(Structured.match("var test = function foo() {return 3+2;}",
-            function() { function _() {}}),
+                function() {
+                    function _() {}
+                }),
             false,
             "Function declaration doesn't match function assignment into var");
 
         equal(Structured.match("rect();",
-            function() { ellipse(); }),
+                function() {
+                    ellipse();
+                }),
             false,
             "Call to function does not match differently-named function.");
 
         equal(Structured.match("rect(300, 400, 100, 110);",
-            function() { rect(30, 40, 10, 11); }),
+                function() {
+                    rect(30, 40, 10, 11);
+                }),
             false,
             "Fully specified parameter call to function identifies mismatch.");
 
         equal(Structured.match("rect(30);",
-            function() { rect(30, 40); }),
+                function() {
+                    rect(30, 40);
+                }),
             false,
             "Too few parameters does not match.");
 
         equal(Structured.match("rect(60, 40, 10, 11);",
-            function() { rect(30, _, _, 11); }),
+                function() {
+                    rect(30, _, _, 11);
+                }),
             false,
             "Parameters with wildcards call to function identifies mismatch.");
 
         equal(Structured.match("rect();",
-            function() { rect(_, _); }),
+                function() {
+                    rect(_, _);
+                }),
             false,
             "Wildcard params do not match no-params for function call.");
 
         equal(Structured.match("rect(30, 40);",
-            function() { rect(_, _, _); }),
+                function() {
+                    rect(_, _, _);
+                }),
             false,
             "Parameters with too few wildcards call to function mismatches.");
     });
@@ -157,7 +211,9 @@ var clutterTests = function() {
 
         ok(Structured.match("if (y > 30 && x > 13) {x += y;} \
             else if (x <10) {y -= 20;} else { y += 2;}",
-            function() { if (_) {} else {}}),
+                function() {
+                    if (_) {} else {}
+                }),
             "Extra else-if statement correctly allowed though not specified.");
 
         structure = function() {
@@ -308,11 +364,17 @@ var peerTests = function() {
         var structure, code;
 
         ok(Structured.match("rect(); ellipse();",
-            function() { rect(); ellipse()}),
+                function() {
+                    rect();
+                    ellipse()
+                }),
             "Back-to-back function calls match.");
 
         equal(Structured.match("rect();",
-            function() { rect(); ellipse()}),
+                function() {
+                    rect();
+                    ellipse()
+                }),
             false,
             "Back-to-back function calls do not match only the first.");
 
@@ -353,9 +415,9 @@ var combinedTests = function() {
     test("Simple combined tests", function() {
         var structure, code;
         structure = function() {
-          if (_ % 2) {
-            _ += _;
-          }
+            if (_ % 2) {
+                _ += _;
+            }
         };
         code = " \n \
         if (y % 2 == 1 ) {   \n \
@@ -373,93 +435,116 @@ var varCallbackTests = function() {
         var structure, code;
 
         equal(Structured.match("var x = 10; var y = 20;",
-            function() {var _ = $a;}, {
-                "varCallbacks": {
-                    "$a": function(obj) {
-                        return false;
+                function() {
+                    var _ = $a;
+                }, {
+                    "varCallbacks": {
+                        "$a": function(obj) {
+                            return false;
+                        }
                     }
-                }
-            }),
+                }),
             false, "Always false varCallback causes failure.");
 
         equal(Structured.match("var x = 10; var y = 20; var k = 42;",
-            function() {var _ = $a; var _ = $b;}, {
-                "varCallbacks": {
-                    "$a": function(obj) {
-                        return false;
-                    },
-                    "$b": function(obj) {
-                        return true;
+                function() {
+                    var _ = $a;
+                    var _ = $b;
+                }, {
+                    "varCallbacks": {
+                        "$a": function(obj) {
+                            return false;
+                        },
+                        "$b": function(obj) {
+                            return true;
+                        }
                     }
-                }
-            }),
+                }),
             false, "One always false varCallback of two causes failure.");
 
         equal(!!Structured.match("var x = 10; var y = 20;",
-            function() {var _ = $a;}, {
-                "varCallbacks": {
-                    "$a": function(obj) {
-                        return true;
+                function() {
+                    var _ = $a;
+                }, {
+                    "varCallbacks": {
+                        "$a": function(obj) {
+                            return true;
+                        }
                     }
-                }
-            }),
+                }),
             true, "Always true varCallback still matches.");
 
         equal(Structured.match("var x = 10; var y = 20;",
-            function() {var z = $a;}, {
-                "varCallbacks": {
-                    "$a": function(obj) {
-                        return true;
+                function() {
+                    var z = $a;
+                }, {
+                    "varCallbacks": {
+                        "$a": function(obj) {
+                            return true;
+                        }
                     }
-                }
-            }),
+                }),
             false, "Always true varCallback with no match does not match.");
 
         equal(!!Structured.match("var x = 10; var y = 20; var z = 40;",
-            function() {var _ = $a;}, {
-                "varCallbacks": {
-                    "$a": function(obj) {
-                        return obj.type === "Literal" && obj.value === 40;
+                function() {
+                    var _ = $a;
+                }, {
+                    "varCallbacks": {
+                        "$a": function(obj) {
+                            return obj.type === "Literal" && obj.value === 40;
+                        }
                     }
-                }
-            }),
+                }),
             true, "Basic single-matching var callback matches.");
 
         equal(!!Structured.match("var x = 10; var y = 20; var z = 40;",
-            function() {var _ = $a; var _ = $b;}, {
-                "varCallbacks": {
-                    "$a": function(obj) {
-                        return obj.type === "Literal" && obj.value > 11;
-                    },
-                    "$b": function(obj) {
-                        return obj.type === "Literal" && obj.value > 30;
+                function() {
+                    var _ = $a;
+                    var _ = $b;
+                }, {
+                    "varCallbacks": {
+                        "$a": function(obj) {
+                            return obj.type === "Literal" && obj.value > 11;
+                        },
+                        "$b": function(obj) {
+                            return obj.type === "Literal" && obj.value > 30;
+                        }
                     }
-                }
-            }),
+                }),
             true, "Two single-matching var callbacks match correctly.");
 
         equal(Structured.match("var x = 10; var y = 20; var z = 40;",
-            function() {var _ = $a; var _ = $b;}, {
-                "varCallbacks": {
-                    "$a": function(obj) {
-                        return obj.type === "Literal" && obj.value > 11;
-                    },
-                    "$b": function(obj) {
-                        return obj.type === "Literal" && obj.value < 11;
+                function() {
+                    var _ = $a;
+                    var _ = $b;
+                }, {
+                    "varCallbacks": {
+                        "$a": function(obj) {
+                            return obj.type === "Literal" && obj.value > 11;
+                        },
+                        "$b": function(obj) {
+                            return obj.type === "Literal" && obj.value < 11;
+                        }
                     }
-                }
-            }),
+                }),
             false, "Two single-matching var callbacks still need ordering.");
 
 
         var varCallbacks;
         varCallbacks = {
             "$a": function(obj) {
-                return {"failure": "Nothing can match $a!"};
+                return {
+                    "failure": "Nothing can match $a!"
+                };
             }
         };
         var result = Structured.match("var x = 10; var y = 20",
-            function() {var $a = _;}, {"varCallbacks": varCallbacks});
+            function() {
+                var $a = _;
+            }, {
+                "varCallbacks": varCallbacks
+            });
         equal(result, false, "Returning failure object will be false");
         equal(varCallbacks.failure, "Nothing can match $a!",
             "Failure message is correctly set, basic.");
@@ -472,11 +557,17 @@ var varCallbackTests = function() {
                 if (obj.value > 30) {
                     return true;
                 }
-                return {"failure": "Make sure the value is big"}
+                return {
+                    "failure": "Make sure the value is big"
+                }
             }
         };
         var result = Structured.match("var x = 10; var y = 20; var c = 0;",
-            function() {var $a = $b;}, {"varCallbacks": varCallbacks});
+            function() {
+                var $a = $b;
+            }, {
+                "varCallbacks": varCallbacks
+            });
         equal(result, false, "Returning failure object is false");
         equal(varCallbacks.failure, "Make sure the value is big",
             "Failure message is correctly set, basic.");
@@ -489,11 +580,17 @@ var varCallbackTests = function() {
                 if (obj.value > 90) {
                     return true;
                 }
-                return {"failure": "Make sure the value is big"};
+                return {
+                    "failure": "Make sure the value is big"
+                };
             }
         };
         var result = Structured.match("var x = 10; var y = 20; var c = 100;",
-            function() {var $a = $b;}, {"varCallbacks": varCallbacks});
+            function() {
+                var $a = $b;
+            }, {
+                "varCallbacks": varCallbacks
+            });
         equal(!!result, true, "Matches still work around failure messages");
         equal(varCallbacks.failure, undefined,
             "Failure message is not set if no failure.");
@@ -502,7 +599,8 @@ var varCallbackTests = function() {
     test("More complicated single variable callbacks", function() {
         var code, structure, varCallbacks;
         structure = function() {
-            var $a = _, _ = $val;
+            var $a = _,
+                _ = $val;
             var $d = function() {};
             var draw = function() {
                 var $b = $a + _;
@@ -535,7 +633,9 @@ var varCallbackTests = function() {
                     obj.callee.name === "foo");
             }
         };
-        equal(!!Structured.match(code, structure, {varCallbacks: varCallbacks}),
+        equal(!!Structured.match(code, structure, {
+                varCallbacks: varCallbacks
+            }),
             true, "Complex with parameters, function names, etc works.");
     });
 
@@ -547,8 +647,12 @@ var varCallbackTests = function() {
             }
         };
         result = !!Structured.match("var x = 50; var y = 20;",
-            function() {var _ = $a; var _ = $b;},
-            {"varCallbacks": varCallbacks});
+            function() {
+                var _ = $a;
+                var _ = $b;
+            }, {
+                "varCallbacks": varCallbacks
+            });
         equal(result, true, "Simple multiple variable callback works.");
 
 
@@ -558,8 +662,12 @@ var varCallbackTests = function() {
             }
         };
         result = !!Structured.match("var x = 50; var y = 20;",
-            function() {var _ = $a; var _ = $b;},
-            {"varCallbacks": varCallbacks});
+            function() {
+                var _ = $a;
+                var _ = $b;
+            }, {
+                "varCallbacks": varCallbacks
+            });
         equal(result, true, "Simple multiple variable callback works.");
 
 
@@ -569,7 +677,11 @@ var varCallbackTests = function() {
             }
         };
         equal(!!Structured.match("var a = 3; var b = 1; var c = 4;",
-            function() {var a = $a; var b = $b; var c = $c;}),
+                function() {
+                    var a = $a;
+                    var b = $b;
+                    var c = $c;
+                }),
             true, "Trim from left works.");
 
 
@@ -590,14 +702,16 @@ var varCallbackTests = function() {
             $c($e, $d);
         };
         code = "tree += 30 + 50 + 10; plant(40, 20); forest(30, 30);";
-        result = Structured.match(code, structure,
-            {"varCallbacks": varCallbacks});
+        result = Structured.match(code, structure, {
+            "varCallbacks": varCallbacks
+        });
         equal(!!result, true, "Multiple multiple-var callbacks work.");
 
         code = ("tree += 30 + 50 + 70; plant(40, 0) + forest(30, 30);" +
             "tree += 30 + 50 + 10; plant(40, 0) + forest(30, 60);");
-        result = Structured.match(code, structure,
-            {"varCallbacks": varCallbacks});
+        result = Structured.match(code, structure, {
+            "varCallbacks": varCallbacks
+        });
         equal(result, false, "False multiple multiple-var callbacks work.");
         equal(varCallbacks.failure, undefined,
             "No failure message if none specified.");
@@ -606,10 +720,14 @@ var varCallbackTests = function() {
         varCallbacks = {
             "$red, $green, $blue": function(red, green, blue) {
                 if (red.value < 50) {
-                    return {"failure": "Red must be greater than 50"};
+                    return {
+                        "failure": "Red must be greater than 50"
+                    };
                 }
                 if (green.value < blue.value) {
-                    return {"failure": "Use more green than blue"};
+                    return {
+                        "failure": "Use more green than blue"
+                    };
                 }
                 return true;
             }
@@ -618,13 +736,17 @@ var varCallbackTests = function() {
             fill($red, $green, $blue);
         };
         result = Structured.match("var foo = 5; foo += 2; fill(100, 40, 200);",
-            structure, {"varCallbacks": varCallbacks});
+            structure, {
+                "varCallbacks": varCallbacks
+            });
         equal(result, false, "False RGB matching works.");
         equal(varCallbacks.failure, "Use more green than blue",
             "False RGB message works");
 
         result = Structured.match("var foo = 5; foo += 2; fill(100, 40, 2);",
-            structure, {"varCallbacks": varCallbacks});
+            structure, {
+                "varCallbacks": varCallbacks
+            });
         equal(!!result, true, "True RGB matching works.");
         equal(varCallbacks.failure, undefined, "True RGB message works");
     });
@@ -634,27 +756,34 @@ var constantFolding = function() {
     QUnit.module("Constant folding");
     test("Simple constant folding", function() {
         ok(Structured.match("var x = -5;",
-            function() { var x = $num; },{
-                "varCallbacks": {
-                    "$num": function(num) {
-                        return num && num.value && num.value < 0;
+                function() {
+                    var x = $num;
+                }, {
+                    "varCallbacks": {
+                        "$num": function(num) {
+                            return num && num.value && num.value < 0;
+                        }
                     }
-                }
-            }),
+                }),
             "Unary - operator folded on number literals.");
 
         ok(Structured.match("var x = +5;",
-            function() { var x = $num; },{
-                "varCallbacks": {
-                    "$num": function(num) {
-                        return num && num.value && num.value > -10;
+                function() {
+                    var x = $num;
+                }, {
+                    "varCallbacks": {
+                        "$num": function(num) {
+                            return num && num.value && num.value > -10;
+                        }
                     }
-                }
-            }),
+                }),
             "Unary + operator folded on number literals.");
 
         ok(Structured.match("var y = 10; var x = +y; x = -y;",
-            function() { var x = +$var; x = -$var; }),
+                function() {
+                    var x = +$var;
+                    x = -$var;
+                }),
             "Unary + - operators work on non-literals.");
     });
 };
@@ -665,28 +794,50 @@ var wildcardVarTests = function() {
         var structure, code;
 
         ok(Structured.match("var x = 10; x -= 1;",
-            function() { var $a = 10; $a -= 1; }),
+                function() {
+                    var $a = 10;
+                    $a -= 1;
+                }),
             "Basic variable match works.");
 
         equal(Structured.match("var x = 10; y -= 1;",
-            function() { var $a = 10; $a -= 1; }),
+                function() {
+                    var $a = 10;
+                    $a -= 1;
+                }),
             false, "Basic variable no-match works.");
 
         ok(Structured.match("var x = 10; var y = 10; var t = 3; var c = 1; c = 3; t += 2; y += 2;",
-            function() {var $a = 10; var $b = _; $b += 2; $a += 2;}),
+                function() {
+                    var $a = 10;
+                    var $b = _;
+                    $b += 2;
+                    $a += 2;
+                }),
             "Basic multiple-option variable match works.");
 
         equal(Structured.match("var x = 10; var y = 10; var t = 3; var c = 1; c = 3; y += 2;",
-            function() {var $a = _; var $b = _; $b = 3 + 2; $a += 2;}), false,
+                function() {
+                    var $a = _;
+                    var $b = _;
+                    $b = 3 + 2;
+                    $a += 2;
+                }), false,
             "Basic multiple-option variable no-match works.");
 
         equal(!!Structured.match("if(true) {var x = 2;} var y = 4; z = x + y",
-            function() {if (_) {var $a = _;} var $b = 4; _ = $a + $b;}),
+                function() {
+                    if (_) {
+                        var $a = _;
+                    }
+                    var $b = 4;
+                    _ = $a + $b;
+                }),
             true, "Simple multiple var match works");
 
         // QUnit test code
         structure = function() {
-        function $k(bar) {}
+            function $k(bar) {}
             $k;
         };
         code = "function foo(bar) {} bar; foo;";
@@ -772,16 +923,22 @@ var nestingOrder = function() {
      * nested at the same or deeper level than A.
      */
     test("Simple nesting tests", function() {
-            var structure, code;
+        var structure, code;
 
-            ok(Structured.match("var x = 5; while(true) { var y = 6; }",
-                function() { var x = 5; var y = 6; }),
-                "Downward expression ordering works.")
+        ok(Structured.match("var x = 5; while(true) { var y = 6; }",
+                function() {
+                    var x = 5;
+                    var y = 6;
+                }),
+            "Downward expression ordering works.")
 
-            ok(!Structured.match("while(true) { var x = 5; } var y = 6;",
-                function() { var x = 5; var y = 6; }),
-                "Upward expression ordering fails.")
-        });
+        ok(!Structured.match("while(true) { var x = 5; } var y = 6;",
+                function() {
+                    var x = 5;
+                    var y = 6;
+                }),
+            "Upward expression ordering fails.")
+    });
 };
 
 var structureMatchTests = function() {
@@ -794,25 +951,25 @@ var structureMatchTests = function() {
             "_": [],
             "vars": {
                 "a": {
+                    "raw": "5",
                     "type": "Literal",
                     "value": 5
                 }
             },
             "root": {
                 "type": "VariableDeclaration",
-                "declarations": [
-                    {
-                        "type": "VariableDeclarator",
-                        "id": {
-                            "type": "Identifier",
-                            "name": "x"
-                        },
-                        "init": {
-                            "type": "Literal",
-                            "value": 5
-                        }
+                "declarations": [{
+                    "type": "VariableDeclarator",
+                    "id": {
+                        "type": "Identifier",
+                        "name": "x"
+                    },
+                    "init": {
+                        "raw": "5",
+                        "type": "Literal",
+                        "value": 5
                     }
-                ],
+                }],
                 "kind": "var"
             }
         }, "Verify variable match inside if statement.");
@@ -823,73 +980,67 @@ var structureMatchTests = function() {
             "_": [],
             "vars": {
                 "a": {
+                    "raw": "5",
                     "type": "Literal",
                     "value": 5
                 }
             },
             "root": {
                 "type": "VariableDeclaration",
-                "declarations": [
-                    {
-                        "type": "VariableDeclarator",
-                        "id": {
-                            "type": "Identifier",
-                            "name": "x"
-                        },
-                        "init": {
-                            "type": "Literal",
-                            "value": 5
-                        }
+                "declarations": [{
+                    "type": "VariableDeclarator",
+                    "id": {
+                        "type": "Identifier",
+                        "name": "x"
+                    },
+                    "init": {
+                        "raw": "5",
+                        "type": "Literal",
+                        "value": 5
                     }
-                ],
+                }],
                 "kind": "var"
             }
         }, "Verify variable match inside if statement.");
 
         deepEqual(Structured.match("test(); if(true){var x = 5;}", {
             "type": "Program",
-            "body": [
-                {
-                    "type": "VariableDeclaration",
-                    "declarations": [
-                        {
-                            "type": "VariableDeclarator",
-                            "id": {
-                                "type": "Identifier",
-                                "name": "x"
-                            },
-                            "init": {
-                                "type": "Identifier",
-                                "name": "_"
-                            }
-                        }
-                    ],
-                    "kind": "var"
-                }
-            ]
+            "body": [{
+                "type": "VariableDeclaration",
+                "declarations": [{
+                    "type": "VariableDeclarator",
+                    "id": {
+                        "type": "Identifier",
+                        "name": "x"
+                    },
+                    "init": {
+                        "type": "Identifier",
+                        "name": "_"
+                    }
+                }],
+                "kind": "var"
+            }]
         }), {
-            "_": [
-                {
-                    "type": "Literal",
-                    "value": 5
-                }
-            ],
+            "_": [{
+                "raw": "5",
+                "type": "Literal",
+                "value": 5
+            }],
             "vars": {},
             "root": {
                 "type": "VariableDeclaration",
-                "declarations": [
-                    {
-                        "type": "VariableDeclarator",
-                        "id": {
-                            "type": "Identifier",
-                            "name": "x"
-                        },
-                        "init": {
-                            "type": "Literal",
-                            "value": 5
-                        }
+                "declarations": [{
+                    "type": "VariableDeclarator",
+                    "id": {
+                        "type": "Identifier",
+                        "name": "x"
+                    },
+                    "init": {
+                        "raw": "5",
+                        "type": "Literal",
+                        "value": 5
                     }
-                ],
+                }],
                 "kind": "var"
             }
         }, "Verify variable declaration with object AST.");
@@ -905,12 +1056,11 @@ var structureMatchTests = function() {
                 "name": "_"
             }
         }), {
-            "_": [
-                {
-                    "type": "Literal",
-                    "value": 5
-                }
-            ],
+            "_": [{
+                "raw": "5",
+                "type": "Literal",
+                "value": 5
+            }],
             "vars": {},
             "root": {
                 "type": "VariableDeclarator",
@@ -919,6 +1069,7 @@ var structureMatchTests = function() {
                     "name": "x"
                 },
                 "init": {
+                    "raw": "5",
                     "type": "Literal",
                     "value": 5
                 }
@@ -928,12 +1079,10 @@ var structureMatchTests = function() {
         deepEqual(Structured.match("test(1,2,3);", function() {
             _();
         }), {
-            "_": [
-                {
-                    "type": "Identifier",
-                    "name": "test"
-                }
-            ],
+            "_": [{
+                "type": "Identifier",
+                "name": "test"
+            }],
             "vars": {},
             "root": {
                 "type": "ExpressionStatement",
@@ -943,39 +1092,37 @@ var structureMatchTests = function() {
                         "type": "Identifier",
                         "name": "test"
                     },
-                    "arguments": [
-                        {
-                            "type": "Literal",
-                            "value": 1
-                        },
-                        {
-                            "type": "Literal",
-                            "value": 2
-                        },
-                        {
-                            "type": "Literal",
-                            "value": 3
-                        }
-                    ]
+                    "arguments": [{
+                        "raw": "1",
+                        "type": "Literal",
+                        "value": 1
+                    }, {
+                        "raw": "2",
+                        "type": "Literal",
+                        "value": 2
+                    }, {
+                        "raw": "3",
+                        "type": "Literal",
+                        "value": 3
+                    }]
                 }
             }
         }, "Verify function call matching.");
 
         deepEqual(Structured.match({
             "type": "VariableDeclaration",
-            "declarations": [
-                {
-                    "type": "VariableDeclarator",
-                    "id": {
-                        "type": "Identifier",
-                        "name": "x"
-                    },
-                    "init": {
-                        "type": "Literal",
-                        "value": 5
-                    }
+            "declarations": [{
+                "type": "VariableDeclarator",
+                "id": {
+                    "type": "Identifier",
+                    "name": "x"
+                },
+                "init": {
+                    "raw": "5",
+                    "type": "Literal",
+                    "value": 5
                 }
-            ],
+            }],
             "kind": "var"
         }, function() {
             var x = $a;
@@ -983,61 +1130,95 @@ var structureMatchTests = function() {
             "_": [],
             "vars": {
                 "a": {
+                    "raw": "5",
                     "type": "Literal",
                     "value": 5
                 }
             },
             "root": {
                 "type": "VariableDeclaration",
-                "declarations": [
-                    {
-                        "type": "VariableDeclarator",
-                        "id": {
-                            "type": "Identifier",
-                            "name": "x"
-                        },
-                        "init": {
-                            "type": "Literal",
-                            "value": 5
-                        }
+                "declarations": [{
+                    "type": "VariableDeclarator",
+                    "id": {
+                        "type": "Identifier",
+                        "name": "x"
+                    },
+                    "init": {
+                        "raw": "5",
+                        "type": "Literal",
+                        "value": 5
                     }
-                ],
+                }],
                 "kind": "var"
             }
         }, "Verify match of existing AST.");
 
         deepEqual(Structured.match(
-            "if(true){var a = 5; test();}",
-            function() {
-                if ($condition) {
-                    glob$expressions;
-                }
-            }), {
+                "if(true){var a = 5; test();}",
+                function() {
+                    if ($condition) {
+                        glob$expressions;
+                    }
+                }), {
                 "_": [],
                 "vars": {
                     "condition": {
+                        "raw": "true",
                         "type": "Literal",
                         "value": true
                     },
-                    "expressions": [
-                        {
+                    "expressions": [{
+                        "type": "VariableDeclaration",
+                        "declarations": [{
+                            "type": "VariableDeclarator",
+                            "id": {
+                                "type": "Identifier",
+                                "name": "a"
+                            },
+                            "init": {
+                                "raw": "5",
+                                "type": "Literal",
+                                "value": 5
+                            }
+                        }],
+                        "kind": "var"
+                    }, {
+                        "type": "ExpressionStatement",
+                        "expression": {
+                            "type": "CallExpression",
+                            "callee": {
+                                "type": "Identifier",
+                                "name": "test"
+                            },
+                            "arguments": []
+                        }
+                    }]
+                },
+                "root": {
+                    "type": "IfStatement",
+                    "test": {
+                        "raw": "true",
+                        "type": "Literal",
+                        "value": true
+                    },
+                    "consequent": {
+                        "type": "BlockStatement",
+                        "body": [{
                             "type": "VariableDeclaration",
-                            "declarations": [
-                                {
-                                    "type": "VariableDeclarator",
-                                    "id": {
-                                        "type": "Identifier",
-                                        "name": "a"
-                                    },
-                                    "init": {
-                                        "type": "Literal",
-                                        "value": 5
-                                    }
+                            "declarations": [{
+                                "type": "VariableDeclarator",
+                                "id": {
+                                    "type": "Identifier",
+                                    "name": "a"
+                                },
+                                "init": {
+                                    "raw": "5",
+                                    "type": "Literal",
+                                    "value": 5
                                 }
-                            ],
+                            }],
                             "kind": "var"
-                        },
-                        {
+                        }, {
                             "type": "ExpressionStatement",
                             "expression": {
                                 "type": "CallExpression",
@@ -1047,47 +1228,7 @@ var structureMatchTests = function() {
                                 },
                                 "arguments": []
                             }
-                        }
-                    ]
-                },
-                "root": {
-                    "type": "IfStatement",
-                    "test": {
-                        "type": "Literal",
-                        "value": true
-                    },
-                    "consequent": {
-                        "type": "BlockStatement",
-                        "body": [
-                            {
-                                "type": "VariableDeclaration",
-                                "declarations": [
-                                    {
-                                        "type": "VariableDeclarator",
-                                        "id": {
-                                            "type": "Identifier",
-                                            "name": "a"
-                                        },
-                                        "init": {
-                                            "type": "Literal",
-                                            "value": 5
-                                        }
-                                    }
-                                ],
-                                "kind": "var"
-                            },
-                            {
-                                "type": "ExpressionStatement",
-                                "expression": {
-                                    "type": "CallExpression",
-                                    "callee": {
-                                        "type": "Identifier",
-                                        "name": "test"
-                                    },
-                                    "arguments": []
-                                }
-                            }
-                        ]
+                        }]
                     },
                     "alternate": null
                 }
@@ -1096,15 +1237,16 @@ var structureMatchTests = function() {
         );
 
         deepEqual(Structured.match(
-            "if(true){}",
-            function() {
-                if ($condition) {
-                    glob$expressions;
-                }
-            }), {
+                "if(true){}",
+                function() {
+                    if ($condition) {
+                        glob$expressions;
+                    }
+                }), {
                 "_": [],
                 "vars": {
                     "condition": {
+                        "raw": "true",
                         "type": "Literal",
                         "value": true
                     },
@@ -1113,6 +1255,7 @@ var structureMatchTests = function() {
                 "root": {
                     "type": "IfStatement",
                     "test": {
+                        "raw": "true",
                         "type": "Literal",
                         "value": true
                     },
@@ -1128,35 +1271,34 @@ var structureMatchTests = function() {
 
         deepEqual(Structured.match("rect(10,20,200,200,300,400);",
             function() {
-                rect(_,_,_,_,glob_);
+                rect(_, _, _, _, glob_);
             }), {
-            "_": [
-                {
+            "_": [{
+                    "raw": "10",
                     "type": "Literal",
                     "value": 10
-                },
-                {
+                }, {
+                    "raw": "20",
                     "type": "Literal",
                     "value": 20
-                },
-                {
+                }, {
+                    "raw": "200",
+                    "type": "Literal",
+                    "value": 200
+                }, {
+                    "raw": "200",
                     "type": "Literal",
                     "value": 200
                 },
-                {
+                [{
+                    "raw": "300",
                     "type": "Literal",
-                    "value": 200
-                },
-                [
-                    {
-                        "type": "Literal",
-                        "value": 300
-                    },
-                    {
-                        "type": "Literal",
-                        "value": 400
-                    }
-                ]
+                    "value": 300
+                }, {
+                    "raw": "400",
+                    "type": "Literal",
+                    "value": 400
+                }]
             ],
             "vars": {},
             "root": {
@@ -1167,54 +1309,53 @@ var structureMatchTests = function() {
                         "type": "Identifier",
                         "name": "rect"
                     },
-                    "arguments": [
-                        {
-                            "type": "Literal",
-                            "value": 10
-                        },
-                        {
-                            "type": "Literal",
-                            "value": 20
-                        },
-                        {
-                            "type": "Literal",
-                            "value": 200
-                        },
-                        {
-                            "type": "Literal",
-                            "value": 200
-                        },
-                        {
-                            "type": "Literal",
-                            "value": 300
-                        },
-                        {
-                            "type": "Literal",
-                            "value": 400
-                        }
-                    ]
+                    "arguments": [{
+                        "raw": "10",
+                        "type": "Literal",
+                        "value": 10
+                    }, {
+                        "raw": "20",
+                        "type": "Literal",
+                        "value": 20
+                    }, {
+                        "raw": "200",
+                        "type": "Literal",
+                        "value": 200
+                    }, {
+                        "raw": "200",
+                        "type": "Literal",
+                        "value": 200
+                    }, {
+                        "raw": "300",
+                        "type": "Literal",
+                        "value": 300
+                    }, {
+                        "raw": "400",
+                        "type": "Literal",
+                        "value": 400
+                    }]
                 }
             }
         }, "Glob additional arguments");
 
         deepEqual(Structured.match("rect(10,20,200,200);",
             function() {
-                rect(_,_,_,_,glob_);
+                rect(_, _, _, _, glob_);
             }), {
-            "_": [
-                {
+            "_": [{
+                    "raw": "10",
                     "type": "Literal",
                     "value": 10
-                },
-                {
+                }, {
+                    "raw": "20",
                     "type": "Literal",
                     "value": 20
-                },
-                {
+                }, {
+                    "raw": "200",
                     "type": "Literal",
                     "value": 200
-                },
-                {
+                }, {
+                    "raw": "200",
                     "type": "Literal",
                     "value": 200
                 },
@@ -1229,47 +1370,50 @@ var structureMatchTests = function() {
                         "type": "Identifier",
                         "name": "rect"
                     },
-                    "arguments": [
-                        {
-                            "type": "Literal",
-                            "value": 10
-                        },
-                        {
-                            "type": "Literal",
-                            "value": 20
-                        },
-                        {
-                            "type": "Literal",
-                            "value": 200
-                        },
-                        {
-                            "type": "Literal",
-                            "value": 200
-                        }
-                    ]
+                    "arguments": [{
+                        "raw": "10",
+                        "type": "Literal",
+                        "value": 10
+                    }, {
+                        "raw": "20",
+                        "type": "Literal",
+                        "value": 20
+                    }, {
+                        "raw": "200",
+                        "type": "Literal",
+                        "value": 200
+                    }, {
+                        "raw": "200",
+                        "type": "Literal",
+                        "value": 200
+                    }]
                 }
             }
         }, "Glob additional arguments, empty");
 
         deepEqual(Structured.match("rect(10,20,200,200);",
             function() {
-                rect($x,$y,$w,$h);
+                rect($x, $y, $w, $h);
             }), {
             "_": [],
             "vars": {
                 "x": {
+                    "raw": "10",
                     "type": "Literal",
                     "value": 10
                 },
                 "y": {
+                    "raw": "20",
                     "type": "Literal",
                     "value": 20
                 },
                 "w": {
+                    "raw": "200",
                     "type": "Literal",
                     "value": 200
                 },
                 "h": {
+                    "raw": "200",
                     "type": "Literal",
                     "value": 200
                 }
@@ -1282,24 +1426,23 @@ var structureMatchTests = function() {
                         "type": "Identifier",
                         "name": "rect"
                     },
-                    "arguments": [
-                        {
-                            "type": "Literal",
-                            "value": 10
-                        },
-                        {
-                            "type": "Literal",
-                            "value": 20
-                        },
-                        {
-                            "type": "Literal",
-                            "value": 200
-                        },
-                        {
-                            "type": "Literal",
-                            "value": 200
-                        }
-                    ]
+                    "arguments": [{
+                        "raw": "10",
+                        "type": "Literal",
+                        "value": 10
+                    }, {
+                        "raw": "20",
+                        "type": "Literal",
+                        "value": 20
+                    }, {
+                        "raw": "200",
+                        "type": "Literal",
+                        "value": 200
+                    }, {
+                        "raw": "200",
+                        "type": "Literal",
+                        "value": 200
+                    }]
                 }
             }
         });
@@ -1308,12 +1451,32 @@ var structureMatchTests = function() {
             function() {
                 var _ = _;
             }), {
-                "_": [
-                    {
+            "_": [{
+                "type": "Identifier",
+                "name": "a"
+            }, {
+                "type": "FunctionExpression",
+                "id": null,
+                "params": [],
+                "defaults": [],
+                "body": {
+                    "type": "BlockStatement",
+                    "body": []
+                },
+                "rest": null,
+                "generator": false,
+                "expression": false
+            }],
+            "vars": {},
+            "root": {
+                "type": "VariableDeclaration",
+                "declarations": [{
+                    "type": "VariableDeclarator",
+                    "id": {
                         "type": "Identifier",
                         "name": "a"
                     },
-                    {
+                    "init": {
                         "type": "FunctionExpression",
                         "id": null,
                         "params": [],
@@ -1326,74 +1489,46 @@ var structureMatchTests = function() {
                         "generator": false,
                         "expression": false
                     }
-                ],
-                "vars": {},
-                "root": {
-                    "type": "VariableDeclaration",
-                    "declarations": [
-                        {
-                            "type": "VariableDeclarator",
-                            "id": {
-                                "type": "Identifier",
-                                "name": "a"
-                            },
-                            "init": {
-                                "type": "FunctionExpression",
-                                "id": null,
-                                "params": [],
-                                "defaults": [],
-                                "body": {
-                                    "type": "BlockStatement",
-                                    "body": []
-                                },
-                                "rest": null,
-                                "generator": false,
-                                "expression": false
-                            }
-                        }
-                    ],
-                    "kind": "var"
-                }
-            });
+                }],
+                "kind": "var"
+            }
+        });
 
         var ifBlock = {
             "type": "IfStatement",
             "test": {
+                "raw": "true",
                 "type": "Literal",
                 "value": true
             },
             "consequent": {
                 "type": "BlockStatement",
-                "body": [
-                    {
-                        "type": "VariableDeclaration",
-                        "declarations": [
-                            {
-                                "type": "VariableDeclarator",
-                                "id": {
-                                    "type": "Identifier",
-                                    "name": "a"
-                                },
-                                "init": {
-                                    "type": "Literal",
-                                    "value": 5
-                                }
-                            }
-                        ],
-                        "kind": "var"
-                    },
-                    {
-                        "type": "ExpressionStatement",
-                        "expression": {
-                            "type": "CallExpression",
-                            "callee": {
-                                "type": "Identifier",
-                                "name": "test"
-                            },
-                            "arguments": []
+                "body": [{
+                    "type": "VariableDeclaration",
+                    "declarations": [{
+                        "type": "VariableDeclarator",
+                        "id": {
+                            "type": "Identifier",
+                            "name": "a"
+                        },
+                        "init": {
+                            "raw": "5",
+                            "type": "Literal",
+                            "value": 5
                         }
+                    }],
+                    "kind": "var"
+                }, {
+                    "type": "ExpressionStatement",
+                    "expression": {
+                        "type": "CallExpression",
+                        "callee": {
+                            "type": "Identifier",
+                            "name": "test"
+                        },
+                        "arguments": []
                     }
-                ]
+                }]
             },
             "alternate": null
         };
@@ -1401,6 +1536,7 @@ var structureMatchTests = function() {
         deepEqual(Structured.matchNode(ifBlock, {
             "type": "IfStatement",
             "test": {
+                "raw": "true",
                 "type": "Literal",
                 "value": true
             },
@@ -1430,36 +1566,32 @@ var structureMatchTests = function() {
         }), {
             "_": [],
             "vars": {
-                "statements": [
-                    {
-                        "type": "VariableDeclaration",
-                        "declarations": [
-                            {
-                                "type": "VariableDeclarator",
-                                "id": {
-                                    "type": "Identifier",
-                                    "name": "a"
-                                },
-                                "init": {
-                                    "type": "Literal",
-                                    "value": 5
-                                }
-                            }
-                        ],
-                        "kind": "var"
-                    },
-                    {
-                        "type": "ExpressionStatement",
-                        "expression": {
-                            "type": "CallExpression",
-                            "callee": {
-                                "type": "Identifier",
-                                "name": "test"
-                            },
-                            "arguments": []
+                "statements": [{
+                    "type": "VariableDeclaration",
+                    "declarations": [{
+                        "type": "VariableDeclarator",
+                        "id": {
+                            "type": "Identifier",
+                            "name": "a"
+                        },
+                        "init": {
+                            "raw": "5",
+                            "type": "Literal",
+                            "value": 5
                         }
+                    }],
+                    "kind": "var"
+                }, {
+                    "type": "ExpressionStatement",
+                    "expression": {
+                        "type": "CallExpression",
+                        "callee": {
+                            "type": "Identifier",
+                            "name": "test"
+                        },
+                        "arguments": []
                     }
-                ]
+                }]
             },
             "root": ifBlock
         }, "Verify exact node match.");
@@ -1469,6 +1601,7 @@ var structureMatchTests = function() {
         }), false, "Verify in-exact node match fails.");
 
         deepEqual(Structured.matchNode(ifBlock, {
+            "raw": "true",
             "type": "Literal",
             "value": true
         }), false, "Verify in-exact node match fails.");
@@ -1486,11 +1619,34 @@ var injectDataTests = function() {
         }, {
             vars: {
                 condition: {
+                    "raw": "true",
                     "type": "Literal",
                     "value": true
                 },
-                expressions: [
-                    {
+                expressions: [{
+                    "type": "ExpressionStatement",
+                    "expression": {
+                        "type": "CallExpression",
+                        "callee": {
+                            "type": "Identifier",
+                            "name": "test"
+                        },
+                        "arguments": []
+                    }
+                }]
+            }
+        }), {
+            "type": "BlockStatement",
+            "body": [{
+                "type": "IfStatement",
+                "test": {
+                    "raw": "true",
+                    "type": "Literal",
+                    "value": true
+                },
+                "consequent": {
+                    "type": "BlockStatement",
+                    "body": [{
                         "type": "ExpressionStatement",
                         "expression": {
                             "type": "CallExpression",
@@ -1500,37 +1656,10 @@ var injectDataTests = function() {
                             },
                             "arguments": []
                         }
-                    }
-                ]
-            }
-        }), {
-            "type": "BlockStatement",
-            "body": [
-                {
-                    "type": "IfStatement",
-                    "test": {
-                        "type": "Literal",
-                        "value": true
-                    },
-                    "consequent": {
-                        "type": "BlockStatement",
-                        "body": [
-                            {
-                                "type": "ExpressionStatement",
-                                "expression": {
-                                    "type": "CallExpression",
-                                    "callee": {
-                                        "type": "Identifier",
-                                        "name": "test"
-                                    },
-                                    "arguments": []
-                                }
-                            }
-                        ]
-                    },
-                    "alternate": null
-                }
-            ]
+                    }]
+                },
+                "alternate": null
+            }]
         }, "Inject a regular and glob variable.");
 
         deepEqual(Structured.injectData(function() {
@@ -1541,11 +1670,54 @@ var injectDataTests = function() {
         }, {
             vars: {
                 condition: {
+                    "raw": "true",
                     "type": "Literal",
                     "value": true
                 },
-                expressions: [
-                    {
+                expressions: [{
+                    "type": "ExpressionStatement",
+                    "expression": {
+                        "type": "CallExpression",
+                        "callee": {
+                            "type": "Identifier",
+                            "name": "test1"
+                        },
+                        "arguments": []
+                    }
+                }, {
+                    "type": "ExpressionStatement",
+                    "expression": {
+                        "type": "CallExpression",
+                        "callee": {
+                            "type": "Identifier",
+                            "name": "test2"
+                        },
+                        "arguments": []
+                    }
+                }]
+            }
+        }), {
+            "type": "BlockStatement",
+            "body": [{
+                "type": "IfStatement",
+                "test": {
+                    "raw": "true",
+                    "type": "Literal",
+                    "value": true
+                },
+                "consequent": {
+                    "type": "BlockStatement",
+                    "body": [{
+                        "type": "ExpressionStatement",
+                        "expression": {
+                            "type": "CallExpression",
+                            "callee": {
+                                "type": "Identifier",
+                                "name": "oldTest"
+                            },
+                            "arguments": []
+                        }
+                    }, {
                         "type": "ExpressionStatement",
                         "expression": {
                             "type": "CallExpression",
@@ -1555,8 +1727,7 @@ var injectDataTests = function() {
                             },
                             "arguments": []
                         }
-                    },
-                    {
+                    }, {
                         "type": "ExpressionStatement",
                         "expression": {
                             "type": "CallExpression",
@@ -1566,59 +1737,10 @@ var injectDataTests = function() {
                             },
                             "arguments": []
                         }
-                    }
-                ]
-            }
-        }), {
-            "type": "BlockStatement",
-            "body": [
-                {
-                    "type": "IfStatement",
-                    "test": {
-                        "type": "Literal",
-                        "value": true
-                    },
-                    "consequent": {
-                        "type": "BlockStatement",
-                        "body": [
-                            {
-                                "type": "ExpressionStatement",
-                                "expression": {
-                                    "type": "CallExpression",
-                                    "callee": {
-                                        "type": "Identifier",
-                                        "name": "oldTest"
-                                    },
-                                    "arguments": []
-                                }
-                            },
-                            {
-                                "type": "ExpressionStatement",
-                                "expression": {
-                                    "type": "CallExpression",
-                                    "callee": {
-                                        "type": "Identifier",
-                                        "name": "test1"
-                                    },
-                                    "arguments": []
-                                }
-                            },
-                            {
-                                "type": "ExpressionStatement",
-                                "expression": {
-                                    "type": "CallExpression",
-                                    "callee": {
-                                        "type": "Identifier",
-                                        "name": "test2"
-                                    },
-                                    "arguments": []
-                                }
-                            }
-                        ]
-                    },
-                    "alternate": null
-                }
-            ]
+                    }]
+                },
+                "alternate": null
+            }]
         }, "Test inserting multiple glob after.");
     });
 };
