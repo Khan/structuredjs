@@ -36,16 +36,16 @@
      * Introspects a callback to determine it's parameters and then
      * produces a constraint that contains the appropriate variables and callbacks.
      *
-     * This allows a much terser definition of callback function where you don't have to 
+     * This allows a much terser definition of callback function where you don't have to
      * explicitly state the parameters in a separate list
      */
-    function makeConstraint(callback){
-        var paramText = /^function [^\(]*\(([^\)]*)\)/.exec(callback.toString())[1];
+    function makeConstraint(callback) {
+        var paramText = /^function [^\(]*\(([^\)]*)\)/.exec(callback)[1];
         var params = paramText.match(/[$_a-zA-z0-9]+/g);
 
-        for (var key in params) { 
-            if(params[key][0] !== "$") {
-                console.warn("Invalid parameter in constraint (should begin with a '$): ", params[key]);
+        for (var key in params) {
+            if (params[key][0] !== "$") {
+                console.warn("Invalid parameter in constraint (should begin with a '$'): ", params[key]);
                 return null;
             }
         }
@@ -53,7 +53,7 @@
             variables: params,
             fn: callback
         };
-    } 
+    }
 
     /*
      * Returns true if the code (a string) matches the structure in rawStructure
@@ -61,7 +61,7 @@
      *
      * Example:
      *     var code = "if (y > 30 && x > 13) {x += y;}";
-     *     var rawStructure = function structure() { if(_) {} };
+     *     var rawStructure = function structure() { if (_) {} };
      *     match(code, rawStructure);
      *
      * options.varCallbacks is an object that maps user variable strings like
@@ -94,6 +94,7 @@
      *   match(code, rawStructure, {varCallbacks: varCallbacks});
      */
     var originalVarCallbacks;
+
     function match(code, rawStructure, options) {
         options = options || {};
         // Many possible inputs formats are accepted for varCallbacks
@@ -106,20 +107,19 @@
         // the values are the callbacks (This option is mainly for historical reasons)
         var varCallbacks = options.varCallbacks || [];
         originalVarCallbacks = varCallbacks; //This exclusively for legacy reasons :P
-        if (varCallbacks instanceof Function ||  (varCallbacks.fn && varCallbacks.variables)) {
+        if (varCallbacks instanceof Function || (varCallbacks.fn && varCallbacks.variables)) {
             varCallbacks = [varCallbacks];
         }
         if (varCallbacks instanceof Array) {
             for (var key in varCallbacks) {
-                if (varCallbacks[key] instanceof Function){
+                if (varCallbacks[key] instanceof Function) {
                     varCallbacks[key] = makeConstraint(varCallbacks[key]);
                 }
             }
-        }
-        else {
+        } else {
             var realCallbacks = [];
-            for(var vars in varCallbacks){
-                if(varCallbacks.hasOwnProperty(vars) && vars !== "failure"){
+            for (var vars in varCallbacks) {
+                if (varCallbacks.hasOwnProperty(vars) && vars !== "failure") {
                     realCallbacks.push({
                         variables: vars.match(/[$_a-zA-z0-9]+/g),
                         fn: varCallbacks[vars]
@@ -128,7 +128,11 @@
             }
             varCallbacks = realCallbacks;
         }
-        var wildcardVars = {order: [], skipData: {}, values: {}};
+        var wildcardVars = {
+            order: [],
+            skipData: {},
+            values: {}
+        };
         // Note: After the parse, structure contains object references into
         // wildcardVars[values] that must be maintained. So, beware of
         // JSON.parse(JSON.stringify), etc. as the tree is no longer static.
@@ -138,8 +142,8 @@
         var codeTree = (cachedCode === code ?
             cachedCodeTree :
             typeof code === "object" ?
-                deepClone(code) :
-                esprima.parse(code));
+            deepClone(code) :
+            esprima.parse(code));
 
         cachedCode = code;
         cachedCodeTree = codeTree;
@@ -152,7 +156,10 @@
             peers = structure.body.slice(1);
         }
         var result;
-        var matchResult = {_: [], vars: {}};
+        var matchResult = {
+            _: [],
+            vars: {}
+        };
         if (wildcardVars.order.length === 0 || options.single) {
             // With no vars to match, our normal greedy approach works great.
             result = checkMatchTree(codeTree, toFind, peers, wildcardVars, matchResult, options);
@@ -191,7 +198,7 @@
          *     .order[i] is the name of the ith occurring variable.
          */
         function anyPossible(i, wVars, varCallbacks, matchResults, options) {
-            var order = wVars.order;  // Just for ease-of-notation.
+            var order = wVars.order; // Just for ease-of-notation.
             wVars.skipData[order[i]] = 0;
             do {
                 // Reset the skip # for all later variables.
@@ -271,7 +278,7 @@
             // Property strings may be "$foo, $bar, $baz" to mimic arrays.
             var varNames = varCallbacks[key].variables;
             var varValues = _.map(varNames, function(varName) {
-                varName = stringLeftTrim(varName);  // Trim whitespace
+                varName = stringLeftTrim(varName); // Trim whitespace
                 // If the var name is in the structure, then it will always
                 // exist in wVars.values after we find a match prior to
                 // checking the var callbacks. So, if a variable name is not
@@ -353,7 +360,7 @@
     function foldConstants(tree) {
         for (var key in tree) {
             if (!tree.hasOwnProperty(key)) {
-                continue;  // Inherited property
+                continue; // Inherited property
             }
 
             var ast = tree[key];
@@ -406,7 +413,7 @@
     function simplifyTree(tree, wVars) {
         for (var key in tree) {
             if (!tree.hasOwnProperty(key)) {
-                continue;  // Inherited property
+                continue; // Inherited property
             }
             if (_.isObject(tree[key])) {
                 if (isWildcard(tree[key])) {
@@ -415,8 +422,10 @@
                     var varName = tree[key].name;
                     if (!wVars.values[varName]) {
                         // Perform setup for the first occurrence.
-                        wVars.values[varName] = {};  // Filled in later.
-                        tree[key] = {wildcardVar: varName};
+                        wVars.values[varName] = {}; // Filled in later.
+                        tree[key] = {
+                            wildcardVar: varName
+                        };
                         wVars.order.push(varName);
                         wVars.skipData[varName] = 0;
                     } else {
@@ -453,7 +462,7 @@
     function isGlob(node) {
         return node && node.name &&
             ((node.name === "glob_" && "_") ||
-            (node.name.indexOf("glob$") === 0 && node.name.slice(5))) ||
+                (node.name.indexOf("glob$") === 0 && node.name.slice(5))) ||
             node && node.expression && isGlob(node.expression);
     }
 
@@ -480,13 +489,13 @@
         // Check children.
         for (var key in currTree) {
             if (!currTree.hasOwnProperty(key) || !_.isObject(currTree[key])) {
-                continue;  // Skip inherited properties
+                continue; // Skip inherited properties
             }
             // Recursively check for matches
             if ((_.isArray(currTree[key]) &&
-                   checkNodeArray(currTree[key], toFind, peersToFind, wVars, matchResults, options)) ||
+                    checkNodeArray(currTree[key], toFind, peersToFind, wVars, matchResults, options)) ||
                 (!_.isArray(currTree[key]) &&
-                checkMatchTree(currTree[key], toFind, peersToFind, wVars, matchResults, options))) {
+                    checkMatchTree(currTree[key], toFind, peersToFind, wVars, matchResults, options))) {
                 return matchResults;
             }
         }
@@ -519,7 +528,7 @@
                 } else {
                     // We matched this node, but we still have more nodes on
                     // this level we need to match on subsequent iterations
-                    toFind = peersToFind.shift();  // Destructive.
+                    toFind = peersToFind.shift(); // Destructive.
                 }
             }
         }
@@ -581,7 +590,7 @@
                 if (key === "wildcardVar") {
                     if (wVars.leftToSkip[subFind] > 0) {
                         wVars.leftToSkip[subFind] -= 1;
-                        return false;  // Skip, this does not match our wildcard
+                        return false; // Skip, this does not match our wildcard
                     }
                     // We have skipped the required number, so take this guess.
                     // Copy over all of currNode's properties into
@@ -592,7 +601,7 @@
                     if (rootToSet) {
                         matchResults.root = rootToSet;
                     }
-                    return matchResults;  // This node is now our variable.
+                    return matchResults; // This node is now our variable.
                 }
                 return false;
             }
@@ -735,7 +744,8 @@
     // styleMap between runs if desired.
     // Right now just support 7 different variables. Just add more if needed.
     addStyling.styles = ["one", "two", "three", "four", "five", "six",
-        "seven"];
+        "seven"
+    ];
     addStyling.styleMap = {};
     addStyling.counter = 0;
 
@@ -800,8 +810,7 @@
                     var globData = getGlobData(node[prop][i], data);
 
                     if (globData) {
-                        node[prop].splice.apply(node[prop],
-                            [i, 1].concat(globData));
+                        node[prop].splice.apply(node[prop], [i, 1].concat(globData));
                         break;
                     } else if (typeof node[prop][i] === "object") {
                         injectData(node[prop][i], data);
