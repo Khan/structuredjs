@@ -23,7 +23,7 @@ Also check out the [pretty display demo](http://khan.github.io/structuredjs/pret
 
     var code = "/* some code */";
 
-    var result = Structured.match(structure, code);
+    var result = Structured.match(code, structure);
 
 Returns true for the code:
 
@@ -41,24 +41,24 @@ Returns true for the code:
 
 To allow tighter control over what exactly is allowed to match your $variable, you may provide a mapping from variable names to function callbacks. These callbacks can enable NOT, OR, and AND functionality on the wildcard variables, for example.
 
-The keys can be of the form "$a", or "$a, $b, $c" if you would like to check multiple values at at time. The callback takes in a proposed value for the variable and accepts/rejects it by returning a boolean. The callback may instead return an object such as `{failure: "failure message"}` as well if you'd like to explain exactly why this value is not allowed.
+Callback parameters should be the same as the name of the wildcard variables they are matching. The callback takes in a proposed value for the variable and accepts/rejects it by returning a boolean. The callback may instead return an object such as `{failure: "failure message"}` as well if you'd like to explain exactly why this value is not allowed.
 
 For instance, say we want to check the value we assign to a var -- check that it is really big, and that it is bigger than whatever we increment it by. It would look like this:
 
     var structure = function() {var _ = $num; $num += $incr; };
     var code = "var foo = 400; foo += 3;";
-    var varCallbacks = {
-      "$num": function(num) {
+    var varCallbacks = [
+      function($num) {
         return num.value > 100;  // Just return true/false
       },
-      "$num, $incr": function(num, incr) {
+      function($num, $incr) {
         if (num.value <= incr.value) {
           // Return the failure message
           return {failure: "The increment must be smaller than the number."};
         }
         return true;
       }
-    };
+    ];
     var match = Structured.match(structure, code, {varCallbacks: varCallbacks});
     if (!match) {
       // varCallbacks.failure contains the error message, if any.

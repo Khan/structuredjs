@@ -43,7 +43,7 @@
         var paramText = /^function [^\(]*\(([^\)]*)\)/.exec(callback.toString())[1];
         var params = paramText.match(/[$_a-zA-z0-9]+/g);
 
-        for (key in params) { 
+        for (var key in params) { 
             if(params[key][0] !== "$") {
                 console.warn("Invalid parameter in constraint (should begin with a '$): ", params[key]);
                 return null;
@@ -76,24 +76,24 @@
      *  varCallback return true.
      *
      * Advanced Example:
-     *    var varCallbacks = {
-     *     "$foo": function(fooObj) {
-     *         return fooObj.value > 92;
+     *   var varCallbacks = [
+     *     function($foo) {
+     *         return $foo.value > 92;
      *     },
-     *     "$foo, $bar, $baz": function(fooObj, barObj, bazObj) {
-     *         if (fooObj.value > barObj.value) {
+     *     function($foo, $bar, $baz) {
+     *         if ($foo.value > $bar.value) {
      *            return {failure: "Check the relationship between values."};
      *         }
-     *         return bazObj !== 48;
+     *         return $baz.value !== 48;
      *     }
-     *   };
+     *   ];
      *   var code = "var a = 400; var b = 120; var c = 500; var d = 49;";
      *   var rawStructure = function structure() {
      *       var _ = $foo; var _ = $bar; var _ = $baz;
      *   };
      *   match(code, rawStructure, {varCallbacks: varCallbacks});
      */
-     var originalVarCallbacks;
+    var originalVarCallbacks;
     function match(code, rawStructure, options) {
         options = options || {};
         // Many possible inputs formats are accepted for varCallbacks
@@ -119,7 +119,7 @@
         else {
             var realCallbacks = [];
             for(var vars in varCallbacks){
-                if(varCallbacks.hasOwnProperty(vars) && vars != "failure"){
+                if(varCallbacks.hasOwnProperty(vars) && vars !== "failure"){
                     realCallbacks.push({
                         variables: vars.match(/[$_a-zA-z0-9]+/g),
                         fn: varCallbacks[vars]
@@ -128,7 +128,6 @@
             }
             varCallbacks = realCallbacks;
         }
-        console.log(varCallbacks);
         var wildcardVars = {order: [], skipData: {}, values: {}};
         // Note: After the parse, structure contains object references into
         // wildcardVars[values] that must be maintained. So, beware of

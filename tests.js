@@ -1762,7 +1762,6 @@ var altVarCallbacks = function(){
         }]}), "List of functions")
 
         ok(!Structured.match("var a = 2", "function(){ var _ = $x; }", {varCallbacks: [function ($x) {
-            console.log("YO");
             return $x.value === 3; 
         }]}), "List of functions failure")
 
