@@ -33,6 +33,29 @@
     }
 
     /*
+     * Introspects a callback to determine it's parameters and then
+     * produces a constraint that contains the appropriate variables and callbacks.
+     *
+     * This allows a much terser definition of callback function where you don't have to 
+     * explicitly state the parameters in a separate list
+     */
+    function makeConstraint(callback){
+        var paramText = /^function [^\(]*\(([^\)]*)\)/.exec(callback.toString())[1];
+        var params = paramText.match(/[$_a-zA-z0-9]+/g);
+
+        for (key in params) { 
+            if(params[key][0] === "$") {
+                console.warn("Invalid parameter in constraint (should begin with a '$''): ", paramName);
+                return null;
+            }
+        }
+        return {
+            variables: params,
+            fn: callback
+        };
+    } 
+
+    /*
      * Returns true if the code (a string) matches the structure in rawStructure
      * Throws an exception if code is not parseable.
      *
@@ -70,9 +93,41 @@
      *   };
      *   match(code, rawStructure, {varCallbacks: varCallbacks});
      */
+     var originalVarCallbacks;
     function match(code, rawStructure, options) {
         options = options || {};
-        var varCallbacks = options.varCallbacks || {};
+        // Many possible inputs formats are accepted for varCallbacks
+        // Constraints can be:
+        // 1. a function (from which we will extract the variables)  
+        // 2. an objects (which already has separate .fn and .variables properties)
+        //
+        // It will also accept a list of either of the above (or a mix of the two).
+        // Finally it can accept an object for which the keys are the variables and 
+        // the values are the callbacks (This option is mainly for historical reasons)
+        var varCallbacks = options.varCallbacks || [];
+        originalVarCallbacks = varCallbacks; //This exclusively for legacy reasons :P
+        if (varCallbacks instanceof Function ||  (varCallbacks.fn && varCallbacks.variables)) {
+            varCallbacks = [varCallbacks];
+        }
+        if (varCallbacks instanceof Array) {
+            for (var key in varCallbacks) {
+                if (varCallbacks[key] instanceof Function){
+                    varCallbacks[key] = makeConstraint(varCallbacks[key]);
+                }
+            }
+        }
+        else {
+            var realCallbacks = [];
+            for(var vars in varCallbacks){
+                if(varCallbacks.hasOwnProperty(vars) && vars != "failure"){
+                    realCallbacks.push({
+                        variables: vars.match(/[$_a-zA-z0-9]+/g),
+                        fn: varCallbacks[vars]
+                    });
+                }
+            }
+            varCallbacks = realCallbacks;
+        }
         var wildcardVars = {order: [], skipData: {}, values: {}};
         // Note: After the parse, structure contains object references into
         // wildcardVars[values] that must be maintained. So, beware of
@@ -211,10 +266,10 @@
      */
     function checkUserVarCallbacks(wVars, varCallbacks) {
         // Clear old failure message if needed
-        delete varCallbacks.failure;
-        for (var property in varCallbacks) {
+        delete originalVarCallbacks.failure;
+        for (var key in varCallbacks) {
             // Property strings may be "$foo, $bar, $baz" to mimic arrays.
-            var varNames = property.split(",");
+            var varNames = varCallbacks[key].variables;
             var varValues = _.map(varNames, function(varName) {
                 varName = stringLeftTrim(varName);  // Trim whitespace
                 // If the var name is in the structure, then it will always
@@ -233,11 +288,16 @@
             // Call the user-defined callback, passing in the var values as
             // parameters in the order that the vars were defined in the
             // property string.
-            var result = varCallbacks[property].apply(null, varValues);
+            console.log(varCallbacks[key]);
+            if(!(varCallbacks[key].fn instanceof Function)) {
+                window.FUCK = varCallbacks[key];
+            }
+            var result = varCallbacks[key].fn.apply(null, varValues);
+            console.log(result);
             if (!result || _.has(result, "failure")) {
                 // Set the failure message if the user callback provides one.
                 if (_.has(result, "failure")) {
-                    varCallbacks.failure = result.failure;
+                    originalVarCallbacks.failure = result.failure;
                 }
                 return false;
             }
