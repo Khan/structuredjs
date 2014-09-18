@@ -94,7 +94,6 @@
      *   match(code, rawStructure, {varCallbacks: varCallbacks});
      */
     var originalVarCallbacks;
-
     function match(code, rawStructure, options) {
         options = options || {};
         // Many possible inputs formats are accepted for varCallbacks
@@ -106,7 +105,12 @@
         // Finally it can accept an object for which the keys are the variables and 
         // the values are the callbacks (This option is mainly for historical reasons)
         var varCallbacks = options.varCallbacks || [];
-        originalVarCallbacks = varCallbacks; //This exclusively for legacy reasons :P
+        // We need to keep a hold of the original varCallbacks object because 
+        // When structured first came out it returned the failure message by 
+        // changing the .failure property on the varCallbacks object and some uses rely on that.
+        // We hope to get rid of this someday.
+        // TODO: Change over the code so to have a better API
+        originalVarCallbacks = varCallbacks;
         if (varCallbacks instanceof Function || (varCallbacks.fn && varCallbacks.variables)) {
             varCallbacks = [varCallbacks];
         }
