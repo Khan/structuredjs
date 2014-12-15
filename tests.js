@@ -112,6 +112,18 @@ var basicTests = function() {
                     rect(_, _);
                 }),
             "Extra params to function matches.");
+
+        ok(Structured.match("[_]",
+                function() {
+                    [,];
+                }),
+            "Wildcard array matches [,]");
+
+        ok(Structured.match("[,]",
+                function() {
+                    [];
+                }),
+            "Empty array matches [,]");
     });
 
     test("Negative tests of syntax", function() {
@@ -201,6 +213,13 @@ var basicTests = function() {
                 }),
             false,
             "Parameters with too few wildcards call to function mismatches.");
+
+        equal(Structured.match("[,]",
+                function() {
+                    [4];
+                }),
+            false,
+            "[,] doesn't match regular array");
     });
 };
 
@@ -1493,6 +1512,24 @@ var structureMatchTests = function() {
                 "kind": "var"
             }
         });
+
+        deepEqual(Structured.match("[,]",
+            function() {
+                [_]
+            }), {
+            "_": [null],
+            "vars": {},
+            "root":{
+                "type": "ExpressionStatement",
+                "expression": {
+                    "type": "ArrayExpression",
+                    "elements": [
+                        null
+                    ]
+                }
+            },
+            "vars": {} 
+        }, "Capturing [,]");
 
         var ifBlock = {
             "type": "IfStatement",
