@@ -705,7 +705,6 @@
             if (_.isObject(subCurr) !== _.isObject(subFind) ||
                 _.isArray(subCurr) !== _.isArray(subFind) ||
                 (typeof(subCurr) !== typeof(subFind))) {
-                console.error("Object/array/other type mismatch.");
                 return false;
             } else if (_.isArray(subCurr)) {
                 // Both are arrays, do a recursive compare.
