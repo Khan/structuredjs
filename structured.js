@@ -478,7 +478,8 @@
      * peersToFind: The remaining ordered syntax nodes that we must find after
      *     toFind (and on the same level as toFind).
      */
-    function checkMatchTree(currTree, toFind, peersToFind, wVars, matchResults, options) {
+    function checkMatchTree(currTree, toFind, peersToFind, wVars, matchResults, options, recursing) {
+        if (typeof recursing === 'undefined') {recursing = false;}
         if (_.isArray(toFind)) {
             console.error("toFind should never be an array.");
             console.error(toFind);
@@ -511,11 +512,11 @@
                 return matchResults;
             }
         }
-        var newops = deepClone(options);
-        newops.hasRecursed = true;
-        var mod = restructureTree(currTree, toFind, peersToFind, wVars, matchResults, newops);
-        if (mod) {
-            return checkMatchTree(mod, toFind, peersToFind, wVars, matchResults, options);
+        if (recursing) {
+            var mod = restructureTree(currTree, toFind, peersToFind, wVars, matchResults, options);
+            if (mod) {
+                return checkMatchTree(mod, toFind, peersToFind, wVars, matchResults, options);
+            }
         }
         return false;
     }
@@ -525,9 +526,6 @@
         Takes an argument list identical to checkMatchTree() above
     */
     function restructureTree(currTree, toFind, peersToFind, wVars, matchResults, options) {
-        if (options.hasRecursed) {
-            return false;
-        }
         var r = deepClone(currTree);
         if (currTree.type === "BinaryExpression" && _.contains(["+", "*"], currTree.operator)) {
             r.left = currTree.right;
@@ -544,15 +542,16 @@
                                 left: currTree.left,
                                 right: currTree.right}};
             }
-            if (currTree.operator === "=" &&
-                currTree.right.type === "BinaryExpression" &&
-                _.isEqual(currTree.left, currTree.right.left) &&
-                _.contains(["+", "-", "*", "/", "%", "<<", ">>", ">>>", "&", "^", "|"], currTree.right.operator)) {
-                return {type: "AssignmentExpression",
-                        operator: currTree.right.operator + "=",
-                        left: currTree.left,
-                        right: currTree.right.right};
+            else if (currTree.operator === "=" &&
+                     currTree.right.type === "BinaryExpression" &&
+                     _.isEqual(currTree.left, currTree.right.left) &&
+                     _.contains(["+", "-", "*", "/", "%", "<<", ">>", ">>>", "&", "^", "|"], currTree.right.operator)) {
+                     return {type: "AssignmentExpression",
+                             operator: currTree.right.operator + "=",
+                             left: currTree.left,
+                             right: currTree.right.right};
             }
+            return false;
         }
         return false;
     }
