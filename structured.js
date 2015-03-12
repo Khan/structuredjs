@@ -498,9 +498,6 @@
         if (options.single) {
             return false;
         }
-        //avoid children accidentally preventing testing alternate nodes
-        var oldRecurse = options.recurse;
-        options.recurse = false;
         // Check children.
         for (var key in currTree) {
             if (!currTree.hasOwnProperty(key) || !_.isObject(currTree[key])) {
@@ -514,10 +511,10 @@
                 return matchResults;
             }
         }
-        options.recurse = oldRecurse;
-        var mod = restructureTree(currTree, toFind, peersToFind, wVars, matchResults, options);
-        if (mod && !options.recurse) {
-            options.recurse = true;
+        var newops = deepClone(options);
+        newops.hasRecursed = true;
+        var mod = restructureTree(currTree, toFind, peersToFind, wVars, matchResults, newops);
+        if (mod) {
             return checkMatchTree(mod, toFind, peersToFind, wVars, matchResults, options);
         }
         return false;
@@ -528,6 +525,9 @@
         Takes an argument list identical to checkMatchTree() above
     */
     function restructureTree(currTree, toFind, peersToFind, wVars, matchResults, options) {
+        if (options.hasRecursed) {
+            return false;
+        }
         var r = deepClone(currTree);
         if (currTree.type === "BinaryExpression" && _.contains(["+", "*"], currTree.operator)) {
             r.left = currTree.right;
