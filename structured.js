@@ -536,9 +536,6 @@
         }
         else if (currTree.type === "AssignmentExpression") {
             if (_.contains(["+=", "-=", "*=", "/=", "%=", "<<=", ">>=", ">>>=", "&=", "^=", "|="], currTree.operator)) {
-                alert(currTree.operator);
-                alert(typeof currTree.operator);
-                alert(currTree.operator.slice(0,-1));
                 return {type: "AssignmentExpression",
                         operator: "=",
                         left: currTree.left,
