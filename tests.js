@@ -292,7 +292,7 @@ var nestedTests = function() {
             console.log(x); \n \
         } \n ";
         ok(Structured.match(code, structure),
-            "More complex nested if with distractions matches.");
+            "More complex nested if with distraction matches.");
 
         code = "  \
         var x = 30; \n \
@@ -729,7 +729,8 @@ var varCallbackTests = function() {
         code = ("tree += 30 + 50 + 70; plant(40, 0) + forest(30, 30);" +
             "tree += 30 + 50 + 10; plant(40, 0) + forest(30, 60);");
         result = Structured.match(code, structure, {
-            "varCallbacks": varCallbacks
+            "varCallbacks": varCallbacks,
+            "orderMatters": true
         });
         equal(result, false, "False multiple multiple-var callbacks work.");
         equal(varCallbacks.failure, undefined,
@@ -1839,6 +1840,36 @@ var altVarCallbacks = function(){
     });
 };
 
+var commutativity = function(){
+    QUnit.module("Checking basic commutative equivalence");
+
+    test("--", function() {
+        structure = function() {
+            $a = $a + 1;
+        };
+        code = "a += 1;"; 
+        equal(!!Structured.match(code, structure, {editorCallbacks: {}}), true, "match += to = +");
+
+        structure = function() {
+            $a += 1;
+        };
+        code = "a = a + 1;"; 
+        equal(!!Structured.match(code, structure, {editorCallbacks: {}}), true, "match = + to +=");
+
+        structure = function() {
+            $a + 7;
+        };
+        code = "7 + a;"; 
+        equal(!!Structured.match(code, structure, {editorCallbacks: {}}), true, "commutative property of addition");
+        
+        structure = function() {
+            7 * $a;
+        };
+        code = "a * 7;"; 
+        equal(!!Structured.match(code, structure, {editorCallbacks: {}}), true, "commutative property of multiplication");
+    });
+};
+
 var runAll = function() {
     basicTests();
     clutterTests();
@@ -1853,6 +1884,7 @@ var runAll = function() {
     structureMatchTests();
     injectDataTests();
     altVarCallbacks();
+    commutativity();
 };
 
 runAll();
