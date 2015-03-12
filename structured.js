@@ -506,16 +506,16 @@
             }
             // Recursively check for matches
             if ((_.isArray(currTree[key]) &&
-                    checkNodeArray(currTree[key], toFind, peersToFind, wVars, matchResults, options)) ||
+                    checkNodeArray(currTree[key], toFind, peersToFind, wVars, matchResults, options, false)) ||
                 (!_.isArray(currTree[key]) &&
-                    checkMatchTree(currTree[key], toFind, peersToFind, wVars, matchResults, options))) {
+                    checkMatchTree(currTree[key], toFind, peersToFind, wVars, matchResults, options, false))) {
                 return matchResults;
             }
         }
-        if (recursing) {
+        if (!recursing && !options.orderMatters) {
             var mod = restructureTree(currTree, toFind, peersToFind, wVars, matchResults, options);
             if (mod) {
-                return checkMatchTree(mod, toFind, peersToFind, wVars, matchResults, options);
+                return checkMatchTree(mod, toFind, peersToFind, wVars, matchResults, options, true);
             }
         }
         return false;
