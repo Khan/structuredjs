@@ -512,7 +512,7 @@
                 return matchResults;
             }
         }
-        if (!recursing && !options.orderMatters) {
+        if (!recursing) {
             var mod = restructureTree(currTree, toFind, peersToFind, wVars, matchResults, options);
             if (mod) {
                 return checkMatchTree(mod, toFind, peersToFind, wVars, matchResults, options, true);
@@ -527,7 +527,7 @@
     */
     function restructureTree(currTree, toFind, peersToFind, wVars, matchResults, options) {
         var r = deepClone(currTree);
-        if (currTree.type === "BinaryExpression" && _.contains(["+", "*"], currTree.operator)) {
+        if (currTree.type === "BinaryExpression" && _.contains(["+", "*"], currTree.operator) && !options.orderMatters) {
             r.left = currTree.right;
             r.right = currTree.left;
             return r;
