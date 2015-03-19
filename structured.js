@@ -477,10 +477,10 @@
      * toFind: The syntax node from the structure that we wish to find.
      * peersToFind: The remaining ordered syntax nodes that we must find after
      *     toFind (and on the same level as toFind).
-     * recursing: is this function being called after a modification by RestructureTree()?
+     * modify: should it call RestructureTree()?
      */
-    function checkMatchTree(currTree, toFind, peersToFind, wVars, matchResults, options, recursing) {
-        if (typeof recursing === 'undefined') {recursing = false;}
+    function checkMatchTree(currTree, toFind, peersToFind, wVars, matchResults, options, modify) {
+        if (typeof modify === 'undefined') {modify = false;}
         if (_.isArray(toFind)) {
             console.error("toFind should never be an array.");
             console.error(toFind);
@@ -507,16 +507,16 @@
             }
             // Recursively check for matches
             if ((_.isArray(currTree[key]) &&
-                    checkNodeArray(currTree[key], toFind, peersToFind, wVars, matchResults, options, false)) ||
+                    checkNodeArray(currTree[key], toFind, peersToFind, wVars, matchResults, options, true)) ||
                 (!_.isArray(currTree[key]) &&
-                    checkMatchTree(currTree[key], toFind, peersToFind, wVars, matchResults, options, false))) {
+                    checkMatchTree(currTree[key], toFind, peersToFind, wVars, matchResults, options, true))) {
                 return matchResults;
             }
         }
-        if (!recursing) {
+        if (modify) {
             var mod = restructureTree(currTree, toFind, peersToFind, wVars, matchResults, options);
             if (mod) {
-                return checkMatchTree(mod, toFind, peersToFind, wVars, matchResults, options, true);
+                return checkMatchTree(mod, toFind, peersToFind, wVars, matchResults, options, false);
             }
         }
         return false;
