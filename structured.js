@@ -477,6 +477,7 @@
      * toFind: The syntax node from the structure that we wish to find.
      * peersToFind: The remaining ordered syntax nodes that we must find after
      *     toFind (and on the same level as toFind).
+     * recursing: is this function being called after a modification by RestructureTree()?
      */
     function checkMatchTree(currTree, toFind, peersToFind, wVars, matchResults, options, recursing) {
         if (typeof recursing === 'undefined') {recursing = false;}
@@ -522,17 +523,20 @@
     }
     
     /*
-        Applies simple transformations to the parse tree to reattempt matching
-        Takes an argument list identical to checkMatchTree() above
-    */
+     * Applies simple transformations to the parse tree to reattempt matching
+     * Takes an argument list identical to checkMatchTree() above, with the exception of the recursing parameter
+     * Transformations:
+     *   a * b => b * a
+     *   a += b => a = a + b
+     *   a = a + b => a += b
+     */
     function restructureTree(currTree, toFind, peersToFind, wVars, matchResults, options) {
         var r = deepClone(currTree);
         if (currTree.type === "BinaryExpression" && _.contains(["+", "*"], currTree.operator) && !options.orderMatters) {
             r.left = currTree.right;
             r.right = currTree.left;
             return r;
-        }
-        else if (currTree.type === "AssignmentExpression") {
+        } else if (currTree.type === "AssignmentExpression") {
             if (_.contains(["+=", "-=", "*=", "/=", "%=", "<<=", ">>=", ">>>=", "&=", "^=", "|="], currTree.operator)) {
                 return {type: "AssignmentExpression",
                         operator: "=",
@@ -541,8 +545,7 @@
                                 operator: currTree.operator.slice(0,-1),
                                 left: currTree.left,
                                 right: currTree.right}};
-            }
-            else if (currTree.operator === "=" &&
+            } else if (currTree.operator === "=" &&
                      currTree.right.type === "BinaryExpression" &&
                      _.isEqual(currTree.left, currTree.right.left) &&
                      _.contains(["+", "-", "*", "/", "%", "<<", ">>", ">>>", "&", "^", "|"], currTree.right.operator)) {
