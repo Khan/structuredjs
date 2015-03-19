@@ -477,8 +477,10 @@
      * toFind: The syntax node from the structure that we wish to find.
      * peersToFind: The remaining ordered syntax nodes that we must find after
      *     toFind (and on the same level as toFind).
+     * modify: should it call RestructureTree()?
      */
-    function checkMatchTree(currTree, toFind, peersToFind, wVars, matchResults, options) {
+    function checkMatchTree(currTree, toFind, peersToFind, wVars, matchResults, options, modify) {
+        if (typeof modify === 'undefined') {modify = false;}
         if (_.isArray(toFind)) {
             console.error("toFind should never be an array.");
             console.error(toFind);
@@ -505,11 +507,54 @@
             }
             // Recursively check for matches
             if ((_.isArray(currTree[key]) &&
-                    checkNodeArray(currTree[key], toFind, peersToFind, wVars, matchResults, options)) ||
+                    checkNodeArray(currTree[key], toFind, peersToFind, wVars, matchResults, options, true)) ||
                 (!_.isArray(currTree[key]) &&
-                    checkMatchTree(currTree[key], toFind, peersToFind, wVars, matchResults, options))) {
+                    checkMatchTree(currTree[key], toFind, peersToFind, wVars, matchResults, options, true))) {
                 return matchResults;
             }
+        }
+        if (modify) {
+            var mod = restructureTree(currTree, toFind, peersToFind, wVars, matchResults, options);
+            if (mod) {
+                return checkMatchTree(mod, toFind, peersToFind, wVars, matchResults, options, false);
+            }
+        }
+        return false;
+    }
+    
+    /*
+     * Applies simple transformations to the parse tree to reattempt matching
+     * Takes an argument list identical to checkMatchTree() above, with the exception of the recursing parameter
+     * Transformations:
+     *   a * b => b * a
+     *   a += b => a = a + b
+     *   a = a + b => a += b
+     */
+    function restructureTree(currTree, toFind, peersToFind, wVars, matchResults, options) {
+        var r = deepClone(currTree);
+        if (currTree.type === "BinaryExpression" && _.contains(["+", "*"], currTree.operator) && !options.orderMatters) {
+            r.left = currTree.right;
+            r.right = currTree.left;
+            return r;
+        } else if (currTree.type === "AssignmentExpression") {
+            if (_.contains(["+=", "-=", "*=", "/=", "%=", "<<=", ">>=", ">>>=", "&=", "^=", "|="], currTree.operator)) {
+                return {type: "AssignmentExpression",
+                        operator: "=",
+                        left: currTree.left,
+                        right: {type: "BinaryExpression",
+                                operator: currTree.operator.slice(0,-1),
+                                left: currTree.left,
+                                right: currTree.right}};
+            } else if (currTree.operator === "=" &&
+                     currTree.right.type === "BinaryExpression" &&
+                     _.isEqual(currTree.left, currTree.right.left) &&
+                     _.contains(["+", "-", "*", "/", "%", "<<", ">>", ">>>", "&", "^", "|"], currTree.right.operator)) {
+                     return {type: "AssignmentExpression",
+                             operator: currTree.right.operator + "=",
+                             left: currTree.left,
+                             right: currTree.right.right};
+            }
+            return false;
         }
         return false;
     }
