@@ -1867,6 +1867,30 @@ var commutativity = function(){
         };
         code = "a * 7;"; 
         equal(!!Structured.match(code, structure, {editorCallbacks: {}}), true, "commutative property of multiplication");
+        
+        structure = function() {
+            7 < $a;
+        };
+        code = "a > 7;"; 
+        equal(!!Structured.match(code, structure, {editorCallbacks: {}}), true, "a > 7 matches 7 < a");
+        
+        structure = function() {
+            7 > $a;
+        };
+        code = "a < 7;"; 
+        equal(!!Structured.match(code, structure, {editorCallbacks: {}}), true, "a < 7 matches 7 > a");
+        
+        structure = function() {
+            7 <= $a;
+        };
+        code = "a >= 7;"; 
+        equal(!!Structured.match(code, structure, {editorCallbacks: {}}), true, "a >= 7 matches 7 <= a");
+        
+        structure = function() {
+            7 >= $a;
+        };
+        code = "a <= 7;"; 
+        equal(!!Structured.match(code, structure, {editorCallbacks: {}}), true, "a <= 7 matches 7 >= a");
     });
 };
 
