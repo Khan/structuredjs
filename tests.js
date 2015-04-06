@@ -1891,6 +1891,18 @@ var commutativity = function(){
         };
         code = "a <= 7;"; 
         equal(!!Structured.match(code, structure, {editorCallbacks: {}}), true, "a <= 7 matches 7 >= a");
+        
+        structure = function() {
+            $a += 1;
+        };
+        code = "a++;"; 
+        equal(!!Structured.match(code, structure, {editorCallbacks: {}}), true, "a++ matches a += 1");
+        
+        structure = function() {
+            $a -= 1;
+        };
+        code = "a--;"; 
+        equal(!!Structured.match(code, structure, {editorCallbacks: {}}), true, "a-- matches a -= 1");
     });
 };
 
