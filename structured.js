@@ -534,6 +534,8 @@
      *   a >= b => b <= a
      *   a += b => a = a + b
      *   a = a + b => a += b
+     *   a++ => a += 1
+     *   a-- => a -= 1
      */
     function restructureTree(currTree, toFind, peersToFind, wVars, matchResults, options) {
         var r = deepClone(currTree);
@@ -576,6 +578,13 @@
                              right: currTree.right.right};
             }
             return false;
+        } else if (currTree.type === "UpdateExpression" && _.contains(["++", "--"], currTree.operator)) {
+            return {type: "AssignmentExpression",
+                    operator: currTree.operator[0] + "=",
+                    left: currTree.argument,
+                    right: {type: "Literal",
+                            value: 1,
+                            raw: "1"}};
         }
         return false;
     }
