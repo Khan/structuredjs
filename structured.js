@@ -527,14 +527,35 @@
      * Takes an argument list identical to checkMatchTree() above, with the exception of the recursing parameter
      * Transformations:
      *   a * b => b * a
+     *   a + b => b + a
+     *   a < b => b > a
+     *   a > b => b < a
+     *   a <= b => b >= a
+     *   a >= b => b <= a
      *   a += b => a = a + b
      *   a = a + b => a += b
      */
     function restructureTree(currTree, toFind, peersToFind, wVars, matchResults, options) {
         var r = deepClone(currTree);
-        if (currTree.type === "BinaryExpression" && _.contains(["+", "*"], currTree.operator) && !options.orderMatters) {
+        if (currTree.type === "BinaryExpression" && _.contains(["+", "*", "<", ">", "<=", ">="], currTree.operator) && !options.orderMatters) {
             r.left = currTree.right;
             r.right = currTree.left;
+            switch (currTree.operator) {
+                case "<":
+                    r.operator = ">";
+                    break;
+                case ">":
+                    r.operator = "<";
+                    break;
+                case "<=":
+                    r.operator = ">=";
+                    break;
+                case ">=":
+                    r.operator = "<=";
+                    break;
+                default: //+, *
+                    r.operator = currTree.operator;
+            }
             return r;
         } else if (currTree.type === "AssignmentExpression") {
             if (_.contains(["+=", "-=", "*=", "/=", "%=", "<<=", ">>=", ">>>=", "&=", "^=", "|="], currTree.operator)) {
