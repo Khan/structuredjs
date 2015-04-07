@@ -599,7 +599,7 @@
                     right: {type: "Literal",
                             value: 1,
                             raw: "1"}};
-        } else if ("body" in currTree && !options.notvar) {
+        } /*else if ("body" in currTree && !options.notvar) {
             var splices = [];
             for (var i = 0; i < currTree.body.length; i++) {
                 if (currTree.body[i].type === "VariableDeclaration") {
@@ -626,7 +626,7 @@
             } else {
                 return false;
             }
-        }
+        } */
         return false;
     }
 
