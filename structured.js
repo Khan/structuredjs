@@ -480,7 +480,7 @@
      * modify: should it call RestructureTree()?
      */
     function checkMatchTree(currTree, toFind, peersToFind, wVars, matchResults, options, modify) {
-        if (typeof modify === 'undefined') {modify = false;}
+        if (typeof modify === 'undefined') {modify = true;}
         if (_.isArray(toFind)) {
             console.error("toFind should never be an array.");
             console.error(toFind);
@@ -536,10 +536,20 @@
      *   a = a + b => a += b
      *   a++ => a += 1
      *   a-- => a -= 1
+     *   a && b => b && a
+     *   a || b => b || a
+     *   a === b => b === a
+     *   a != b => b != a
+     *   a !== b => b !== a
+     *   a == b => b == a
+     *   a & b => b & a
+     *   a | b => b | a
+     *   a ^ b => b ^ a
      */
     function restructureTree(currTree, toFind, peersToFind, wVars, matchResults, options) {
         var r = deepClone(currTree);
-        if (currTree.type === "BinaryExpression" && _.contains(["+", "*", "<", ">", "<=", ">="], currTree.operator) && !options.orderMatters) {
+        if (currTree.type === "BinaryExpression" && _.contains(["+", "*", "<", ">", "<=", ">=", "===", "!=", "!==", "==", "&", "|", "^"],
+                                                                currTree.operator) && !options.orderMatters) {
             r.left = currTree.right;
             r.right = currTree.left;
             switch (currTree.operator) {
@@ -555,9 +565,13 @@
                 case ">=":
                     r.operator = "<=";
                     break;
-                default: //+, *
+                default: //+, *, ===, !=, !==, ==, &, |, ^
                     r.operator = currTree.operator;
             }
+            return r;
+        } else if (currTree.type === "LogicalExpression" && _.contains(["&&", "||"], currTree.operator) && !options.orderMatters) {
+            r.left = currTree.right;
+            r.right = currTree.left;
             return r;
         } else if (currTree.type === "AssignmentExpression") {
             if (_.contains(["+=", "-=", "*=", "/=", "%=", "<<=", ">>=", ">>>=", "&=", "^=", "|="], currTree.operator)) {
@@ -585,6 +599,33 @@
                     right: {type: "Literal",
                             value: 1,
                             raw: "1"}};
+        } else if ("body" in currTree && !options.notvar) {
+            var splices = [];
+            for (var i = 0; i < currTree.body.length; i++) {
+                if (currTree.body[i].type === "VariableDeclaration") {
+                    for (var j = 0; j < currTree.body[i].declarations.length; j++) {
+                        if (currTree.body[i].declarations[j].init != null) {
+                            splices.push([i, {type: "ExpressionStatement",
+                                              expression: {
+                                                  type: "AssignmentExpression",
+                                                  operator: "=",
+                                                  left: currTree.body[i].declarations[j].id,
+                                                  right: currTree.body[i].declarations[j].init}}]);
+                            r.body[i].declarations[j].init = null;
+                        }
+                    }
+                }
+            }
+            for (var s = 0; s < splices.length; s++) {
+                r.body.splice(splices[s][0] + s, 0, splices[s][1]);
+            }
+            if (splices.length > 0) {
+                console.log(currTree);
+                console.log(r);
+                return r;
+            } else {
+                return false;
+            }
         }
         return false;
     }
