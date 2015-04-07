@@ -927,7 +927,7 @@ var wildcardVarTests = function() {
             z = 'eaglee'.length;   \n \
         }   \n \
         ";
-        equal(Structured.match(code, structure, {notvar: true}),
+        equal(Structured.match(code, structure), //, {notvar: true}),
             false, "Complex vars with small mismatch breaks.");
 
     });
@@ -956,7 +956,7 @@ var nestingOrder = function() {
                 function() {
                     var x = 5;
                     var y = 6;
-                }, {notvar:true}),
+                }),//, {notvar:true}),
             "Upward expression ordering fails.")
     });
 };
@@ -1970,12 +1970,12 @@ var commutativity = function(){
         code = "7 || a;"; 
         equal(!!Structured.match(code, structure, {editorCallbacks: {}}), true, "commutative property of ||");
 
-        structure = function() {
+        /*structure = function() {
             var $a;
             $a = 7;
         };
         code = "var a = 7;"; 
-        equal(!!Structured.match(code, structure, {editorCallbacks: {}}), true, "var a = 7 matches var a; a = 7");
+        equal(!!Structured.match(code, structure, {editorCallbacks: {}}), true, "var a = 7 matches var a; a = 7"); */
     });
 };
 
