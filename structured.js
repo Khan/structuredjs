@@ -599,7 +599,9 @@
                     right: {type: "Literal",
                             value: 1,
                             raw: "1"}};
-        } /*else if ("body" in currTree && !options.notvar) {
+        }
+        //This section would transform "var x = 3;" to "var x; x = 3;" though it has issues.
+        /*else if ("body" in currTree && !options.notvar) {
             var splices = [];
             for (var i = 0; i < currTree.body.length; i++) {
                 if (currTree.body[i].type === "VariableDeclaration") {
