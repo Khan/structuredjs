@@ -927,7 +927,7 @@ var wildcardVarTests = function() {
             z = 'eaglee'.length;   \n \
         }   \n \
         ";
-        equal(Structured.match(code, structure), //, {notvar: true}),
+        equal(Structured.match(code, structure),
             false, "Complex vars with small mismatch breaks.");
 
     });
@@ -956,7 +956,7 @@ var nestingOrder = function() {
                 function() {
                     var x = 5;
                     var y = 6;
-                }),//, {notvar:true}),
+                }),
             "Upward expression ordering fails.")
     });
 };
