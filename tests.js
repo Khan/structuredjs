@@ -1969,13 +1969,6 @@ var commutativity = function(){
         };
         code = "7 || a;"; 
         equal(!!Structured.match(code, structure, {editorCallbacks: {}}), true, "commutative property of ||");
-
-        /*structure = function() {
-            var $a;
-            $a = 7;
-        };
-        code = "var a = 7;"; 
-        equal(!!Structured.match(code, structure, {editorCallbacks: {}}), true, "var a = 7 matches var a; a = 7"); */
     });
 };
 
