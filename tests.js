@@ -1903,6 +1903,72 @@ var commutativity = function(){
         };
         code = "a--;"; 
         equal(!!Structured.match(code, structure, {editorCallbacks: {}}), true, "a-- matches a -= 1");
+        
+        structure = function() {
+            true && false;
+        };
+        code = "false && true;"; 
+        equal(!!Structured.match(code, structure, {editorCallbacks: {}}), true, "true && false matches false && true");
+        
+        structure = function() {
+            ($a === 3) || true;
+        };
+        code = "true || (a === 3);"; 
+        equal(!!Structured.match(code, structure, {editorCallbacks: {}}), true, "true || (a === 3) matches (a === 3) || true");
+
+        structure = function() {
+            $a === 7;
+        };
+        code = "7 === a;"; 
+        equal(!!Structured.match(code, structure, {editorCallbacks: {}}), true, "commutative property of ===");
+        
+        structure = function() {
+            7 != $a;
+        };
+        code = "a != 7;"; 
+        equal(!!Structured.match(code, structure, {editorCallbacks: {}}), true, "commutative property of !=");
+
+        structure = function() {
+            $a !== 7;
+        };
+        code = "7 !== a;"; 
+        equal(!!Structured.match(code, structure, {editorCallbacks: {}}), true, "commutative property of !==");
+        
+        structure = function() {
+            7 == $a;
+        };
+        code = "a == 7;"; 
+        equal(!!Structured.match(code, structure, {editorCallbacks: {}}), true, "commutative property of ==");
+
+        structure = function() {
+            $a & 7;
+        };
+        code = "7 & a;"; 
+        equal(!!Structured.match(code, structure, {editorCallbacks: {}}), true, "commutative property of &");
+        
+        structure = function() {
+            7 | $a;
+        };
+        code = "a | 7;"; 
+        equal(!!Structured.match(code, structure, {editorCallbacks: {}}), true, "commutative property of |");
+
+        structure = function() {
+            $a ^ 7;
+        };
+        code = "7 ^ a;"; 
+        equal(!!Structured.match(code, structure, {editorCallbacks: {}}), true, "commutative property of ^");
+        
+        structure = function() {
+            7 && $a;
+        };
+        code = "a && 7;"; 
+        equal(!!Structured.match(code, structure, {editorCallbacks: {}}), true, "commutative property of &&");
+
+        structure = function() {
+            $a || 7;
+        };
+        code = "7 || a;"; 
+        equal(!!Structured.match(code, structure, {editorCallbacks: {}}), true, "commutative property of ||");
     });
 };
 
