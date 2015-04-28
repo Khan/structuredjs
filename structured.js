@@ -118,21 +118,21 @@
 					 value: 1,
 					 raw: "1"}}};
 		} break;
-	    case "VariableDeclarations":
+	    /*case "VariableDeclaration":
 	        if (tree.kind === "var") {
-		    var ar = [r];
+		    r = [deepClone(tree)];
 		    for (var i in tree.declarations) {
-			if (tree.declarations[i].type === "VariableDeclaration" &&
+			if (tree.declarations[i].type === "VariableDeclarator" &&
 			    tree.declarations[i].init !== null) {
-			    ar.push({type: "ExpressionStatement",
-				     expression: {type: "AssignmentExpression",
-						  operator: "=",
-						  left: tree.declarations[i].id,
-						  right: standardizeTree(tree.declarations[i].init)}});
-			    ar[0].declarations[i].init = null;
+			    r.push({type: "ExpressionStatement",
+				    expression: {type: "AssignmentExpression",
+						 operator: "=",
+						 left: tree.declarations[i].id,
+						 right: standardizeTree(tree.declarations[i].init)}});
+			    r[0].declarations[i].init = null;
 			}
 		    }
-		} break;
+		} break; */
 	    default:
 	        for (var key in tree) {
 		    if (!tree.hasOwnProperty(key) || !_.isObject(tree[key])) {
