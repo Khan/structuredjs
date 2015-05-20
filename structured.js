@@ -59,13 +59,13 @@
      * return true if n2 < n1 (according to relatively arbitrary criteria)
      */
     function shouldSwap(n1, n2) {
-	if (n1.type < n2.type) {
+	if (n1.type < n2.type) { //Sort by node type if different
 	    return false;
 	} else if (n1.type > n2.type) {
 	    return true;
-	} else if (n1.type === "Literal") {
+	} else if (n1.type === "Literal") { //Sort by value if they're literals
 	    return n1.raw > n2.raw
-	} else {
+	} else { //Otherwise, loop through the properties until a difference is found and sort by that
 	    for (var k in n1) {
 		if (n1[k].hasOwnProperty("type") && n1[k] !== n2[k]) {
 		    return shouldSwap(n1[k], n2[k]);
@@ -118,7 +118,7 @@
 					 value: 1,
 					 raw: "1"}}};
 		} break;
-	    /*case "VariableDeclaration":
+	    case "VariableDeclaration":
 	        if (tree.kind === "var") {
 		    r = [deepClone(tree)];
 		    for (var i in tree.declarations) {
@@ -132,7 +132,7 @@
 			    r[0].declarations[i].init = null;
 			}
 		    }
-		} break; */
+		} break;
 	    default:
 	        for (var key in tree) {
 		    if (!tree.hasOwnProperty(key) || !_.isObject(tree[key])) {
