@@ -984,11 +984,7 @@ var structureMatchTests = function() {
                         "type": "Identifier",
                         "name": "x"
                     },
-                    "init": {
-                        "raw": "5",
-                        "type": "Literal",
-                        "value": 5
-                    }
+                    "init": null
                 }],
                 "kind": "var"
             }
@@ -1013,11 +1009,7 @@ var structureMatchTests = function() {
                         "type": "Identifier",
                         "name": "x"
                     },
-                    "init": {
-                        "raw": "5",
-                        "type": "Literal",
-                        "value": 5
-                    }
+                    "init": null
                 }],
                 "kind": "var"
             }
@@ -1055,11 +1047,7 @@ var structureMatchTests = function() {
                         "type": "Identifier",
                         "name": "x"
                     },
-                    "init": {
-                        "raw": "5",
-                        "type": "Literal",
-                        "value": 5
-                    }
+                    "init": null
                 }],
                 "kind": "var"
             }
@@ -1071,16 +1059,9 @@ var structureMatchTests = function() {
                 "type": "Identifier",
                 "name": "x"
             },
-            "init": {
-                "type": "Identifier",
-                "name": "_"
-            }
+            "init": null
         }), {
-            "_": [{
-                "raw": "5",
-                "type": "Literal",
-                "value": 5
-            }],
+            "_": [],
             "vars": {},
             "root": {
                 "type": "VariableDeclarator",
@@ -1088,11 +1069,7 @@ var structureMatchTests = function() {
                     "type": "Identifier",
                     "name": "x"
                 },
-                "init": {
-                    "raw": "5",
-                    "type": "Literal",
-                    "value": 5
-                }
+                "init": null
             }
         }, "Verify primitive with simple object AST.");
 
@@ -1148,13 +1125,7 @@ var structureMatchTests = function() {
             var x = $a;
         }), {
             "_": [],
-            "vars": {
-                "a": {
-                    "raw": "5",
-                    "type": "Literal",
-                    "value": 5
-                }
-            },
+            "vars": {},
             "root": {
                 "type": "VariableDeclaration",
                 "declarations": [{
@@ -1163,11 +1134,7 @@ var structureMatchTests = function() {
                         "type": "Identifier",
                         "name": "x"
                     },
-                    "init": {
-                        "raw": "5",
-                        "type": "Literal",
-                        "value": 5
-                    }
+                    "init": null
                 }],
                 "kind": "var"
             }
@@ -1195,14 +1162,25 @@ var structureMatchTests = function() {
                                 "type": "Identifier",
                                 "name": "a"
                             },
-                            "init": {
-                                "raw": "5",
-                                "type": "Literal",
-                                "value": 5
-                            }
+                            "init": null
                         }],
                         "kind": "var"
                     }, {
+                        "expression":  {
+                          "left": {
+                            "name": "a",
+                            "type": "Identifier"
+                          },
+                          "operator": "=",
+                          "right": {
+                            "raw": "5",
+                            "type": "Literal",
+                            "value": 5
+                          },
+                          "type": "AssignmentExpression"
+                        },
+                        "type": "ExpressionStatement"
+                      }, {
                         "type": "ExpressionStatement",
                         "expression": {
                             "type": "CallExpression",
@@ -1231,14 +1209,25 @@ var structureMatchTests = function() {
                                     "type": "Identifier",
                                     "name": "a"
                                 },
-                                "init": {
-                                    "raw": "5",
-                                    "type": "Literal",
-                                    "value": 5
-                                }
+                                "init": null
                             }],
                             "kind": "var"
                         }, {
+                            "expression":  {
+                              "left": {
+                                "name": "a",
+                                "type": "Identifier"
+                              },
+                              "operator": "=",
+                              "right": {
+                                "raw": "5",
+                                "type": "Literal",
+                                "value": 5
+                              },
+                              "type": "AssignmentExpression"
+                            },
+                            "type": "ExpressionStatement"
+                          }, {
                             "type": "ExpressionStatement",
                             "expression": {
                                 "type": "CallExpression",
@@ -1475,6 +1464,9 @@ var structureMatchTests = function() {
                 "type": "Identifier",
                 "name": "a"
             }, {
+                "type": "Identifier",
+                "name": "a"
+            }, {
                 "type": "FunctionExpression",
                 "id": null,
                 "params": [],
@@ -1496,19 +1488,7 @@ var structureMatchTests = function() {
                         "type": "Identifier",
                         "name": "a"
                     },
-                    "init": {
-                        "type": "FunctionExpression",
-                        "id": null,
-                        "params": [],
-                        "defaults": [],
-                        "body": {
-                            "type": "BlockStatement",
-                            "body": []
-                        },
-                        "rest": null,
-                        "generator": false,
-                        "expression": false
-                    }
+                    "init": null
                 }],
                 "kind": "var"
             }
@@ -1549,11 +1529,7 @@ var structureMatchTests = function() {
                             "type": "Identifier",
                             "name": "a"
                         },
-                        "init": {
-                            "raw": "5",
-                            "type": "Literal",
-                            "value": 5
-                        }
+                        "init": null
                     }],
                     "kind": "var"
                 }, {
@@ -1612,11 +1588,7 @@ var structureMatchTests = function() {
                             "type": "Identifier",
                             "name": "a"
                         },
-                        "init": {
-                            "raw": "5",
-                            "type": "Literal",
-                            "value": 5
-                        }
+                        "init": null
                     }],
                     "kind": "var"
                 }, {
@@ -1969,6 +1941,12 @@ var commutativity = function(){
         };
         code = "7 || a;"; 
         equal(!!Structured.match(code, structure, {editorCallbacks: {}}), true, "commutative property of ||");
+
+        structure = function() {
+            var $a = 7;
+        };
+        code = "var a; a = 7;"; 
+        equal(!!Structured.match(code, structure, {editorCallbacks: {}}), true, "var a = 7 matches var a; a = 7");
     });
 };
 
