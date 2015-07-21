@@ -59,7 +59,7 @@ For instance, say we want to check the value we assign to a var -- check that it
         return true;
       }
     ];
-    var match = Structured.match(structure, code, {varCallbacks: varCallbacks});
+    var match = Structured.match(code, structure, {varCallbacks: varCallbacks});
     if (!match) {
       // varCallbacks.failure contains the error message, if any.
       console.log("The problem is: " + varCallbacks.failure);
