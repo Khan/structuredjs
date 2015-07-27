@@ -20,7 +20,7 @@
 
     if (typeof module !== "undefined" && module.exports) {
         exports = module.exports = {};
-        esprima = require("esprima");
+        esprima = require("./external/esprima.js");
         _ = require("underscore");
     } else {
         exports = this.Structured = {};
@@ -64,7 +64,7 @@
 	} else if (n1.type > n2.type) {
 	    return true;
 	} else if (n1.type === "Literal") { //Sort by value if they're literals
-	    return n1.raw > n2.raw
+	    return n1.raw > n2.raw;
 	} else { //Otherwise, loop through the properties until a difference is found and sort by that
 	    for (var k in n1) {
 		if (n1[k].hasOwnProperty("type") && n1[k] !== n2[k]) {
@@ -140,7 +140,7 @@
 		    }
 		    if (_.isArray(tree[key])) {
 			var ar = [];
-			for (var i in tree[key]) {
+			for (var i in tree[key]) {  /* jshint forin:false */
 			    ar = ar.concat(standardizeTree(tree[key][i]));
 			}
 			r[key] = ar;
@@ -376,7 +376,7 @@
     function checkUserVarCallbacks(wVars, varCallbacks) {
         // Clear old failure message if needed
         delete originalVarCallbacks.failure;
-        for (var key in varCallbacks) {
+        for (var key in varCallbacks) {  /* jshint forin:false */
             // Property strings may be "$foo, $bar, $baz" to mimic arrays.
             var varNames = varCallbacks[key].variables;
             var varValues = _.map(varNames, function(varName) {
@@ -460,7 +460,7 @@
      * Constant folds the syntax tree
      */
     function foldConstants(tree) {
-        for (var key in tree) {
+        for (var key in tree) {  /* jshint forin:false */
             if (!tree.hasOwnProperty(key)) {
                 continue; // Inherited property
             }
@@ -474,6 +474,7 @@
                  * This is easy to extend, but it means we lose the ability to match
                  * potentially useful expressions like 5 + 5 with a pattern like _ + _.
                  */
+                /* jshint eqeqeq:false */
                 if (ast.type == esprima.Syntax.UnaryExpression) {
                     var argument = ast.argument;
                     if (argument.type === esprima.Syntax.Literal &&
@@ -513,7 +514,7 @@
      *
      */
     function simplifyTree(tree, wVars) {
-        for (var key in tree) {
+        for (var key in tree) {  /* jshint forin:false */
             if (!tree.hasOwnProperty(key)) {
                 continue; // Inherited property
             }
@@ -582,6 +583,7 @@
             console.error("toFind should never be an array.");
             console.error(toFind);
         }
+        /* jshint -W041, -W116 */
         if (currTree == undefined) {
             if (toFind == undefined) {
                 matchResults._.push(currTree);
@@ -598,7 +600,7 @@
             return false;
         }
         // Check children.
-        for (var key in currTree) {
+        for (var key in currTree) {  /* jshint forin:false */
             if (!currTree.hasOwnProperty(key) || !_.isObject(currTree[key])) {
                 continue; // Skip inherited properties
             }
@@ -763,7 +765,7 @@
             rootToSet = currNode;
         }
 
-        for (var key in toFind) {
+        for (var key in toFind) {  /* jshint forin:false */
             // Ignore inherited properties; also, null properties can be
             // anything and do not have to exist.
             if (!toFind.hasOwnProperty(key) || toFind[key] === null) {
@@ -773,6 +775,7 @@
             var subCurr = currNode[key];
             // Undefined properties can be anything, but they must exist.
             if (subFind === undefined) {
+                /* jshint -W116 */
                 if (subCurr == undefined) {
                     return false;
                 } else {
@@ -993,7 +996,7 @@
             return node;
         }
 
-        for (var prop in node) {
+        for (var prop in node) {  /* jshint forin:false */
             if (!node.hasOwnProperty(prop)) {
                 continue;
             }
