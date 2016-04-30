@@ -82,7 +82,10 @@
 		    if (shouldSwap(tree.left, tree.right)) {
 			r.left = standardizeTree(tree.right);
 			r.right = standardizeTree(tree.left);
-		    }
+            } else {
+                r.left = standardizeTree(tree.left);
+                r.right = standardizeTree(tree.right);
+            }
 		} else if (tree.operator[0] === ">") {
 		    r.operator = "<" + tree.operator.slice(1);
 		    r.left = standardizeTree(tree.right);
@@ -104,7 +107,10 @@
 				 operator: tree.operator.slice(0,-1),
 				 left: l,
 				 right: standardizeTree(tree.right)}};
-		} break;
+		} else {
+            r.left = standardizeTree(r.left);
+            r.right = standardizeTree(r.right);
+        } break;
 	    case "UpdateExpression":
 	        if (_.contains(["++", "--"], tree.operator)) {
 		    var l = standardizeTree(tree.argument);
@@ -133,6 +139,13 @@
 			}
 		    }
 		} break;
+        case "Literal":
+            r.raw = tree.raw
+                .replace(/^(?:\"(.*?)\"|\'(.*?)\')$/, function(match, p1, p2) {
+                    return "\"" + ((p1 || "") + (p2 || ""))
+                        .replace(/"|'/g, "\"") + "\"";
+                });
+            console.log(r.raw); break;
 	    default:
 	        for (var key in tree) {
 		    if (!tree.hasOwnProperty(key) || !_.isObject(tree[key])) {

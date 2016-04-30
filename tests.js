@@ -124,6 +124,19 @@ var basicTests = function() {
                     [];
                 }),
             "Empty array matches [,]");
+            
+        ok(Structured.match("var myVar = \"abc I love strings!\"", function() {
+            var _ = 'abc I love strings!';
+        }), "\"text\" matches 'text'");
+        
+        ok(Structured.match("var myVar = 'abc I love strings!'", function() {
+            var _ = "abc I love strings!";
+        }), "'text' matches \"text\"");
+        
+        ok(Structured.match("var empty1 = '';var empty2 = \"\"", function() {
+            var _ = '';
+            var _ = "";
+        }), "Quote style of empty string is ignored");
     });
 
     test("Negative tests of syntax", function() {
