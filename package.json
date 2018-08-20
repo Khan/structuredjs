@@ -18,15 +18,13 @@
     "structure"
   ],
   "author": "swestwood",
-  "license": "BSD",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/Khan/structuredjs/issues"
   },
   "dependencies": {
     "esprima": "~1.0.3",
-    "underscore": "~1.5.1",
-    "react": "^0.11.1",
-    "escodegen": "^1.3.3"
+    "underscore": "~1.5.1"
   },
   "devDependencies": {
     "qunit": "~0.5.16"
