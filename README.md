@@ -77,4 +77,3 @@ Run structured.js tests with `npm test` or by opening browser-test/index.html.
 
 [Esprima](http://esprima.org) and [UnderscoreJS](http://underscorejs.org) for the framework,
 [QUnit](http://qunitjs.com/) for the test suite,
-[RainbowJS](http://craig.is/making/rainbows/) for prettified structures.
